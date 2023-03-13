@@ -35,11 +35,7 @@ class SaveButton extends StatelessWidget {
 }
 
 class RestoreButton extends StatelessWidget {
-  const RestoreButton({
-    super.key,
-    required this.restoreOriginalImage,
-  });
-
+  const RestoreButton({super.key, required this.restoreOriginalImage});
   final Function() restoreOriginalImage;
 
   @override
@@ -54,11 +50,7 @@ class RestoreButton extends StatelessWidget {
 }
 
 class OpenButton extends StatelessWidget {
-  const OpenButton({
-    super.key,
-    required this.loadImage,
-  });
-
+  const OpenButton({super.key, required this.loadImage});
   final Function(String path) loadImage;
 
   @override
@@ -77,6 +69,21 @@ class OpenButton extends StatelessWidget {
 
         if (path != null) loadImage(path);
       },
+    );
+  }
+}
+
+class ConvertToGrayscaleButton extends StatelessWidget {
+  const ConvertToGrayscaleButton({super.key, required this.convertToGrayscale});
+  final Function() convertToGrayscale;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.format_color_reset_outlined),
+      tooltip: 'Convert to grayscale',
+      hoverColor: Colors.transparent,
+      onPressed: () => convertToGrayscale(),
     );
   }
 }

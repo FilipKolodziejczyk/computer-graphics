@@ -51,12 +51,14 @@ class MyHomePage extends StatelessWidget {
     var functionalFilters = appState.functionalFilters;
     var convolutionFilters = appState.convolutionFilters;
     var updateLinearFilter = appState.updateLinearFilter;
+    var convertToGrayscale = appState.convertToGrayscale;
 
     return Scaffold(
         appBar: AppBar(
           title: const Text('Image Viewer'),
           backgroundColor: Theme.of(context).focusColor,
           actions: [
+            ConvertToGrayscaleButton(convertToGrayscale: convertToGrayscale),
             FunctionalFiltersButton(
               applyFilter: applyFilter,
               functionalFilters: functionalFilters + linearFilters,

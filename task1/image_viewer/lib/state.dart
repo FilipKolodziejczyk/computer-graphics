@@ -77,4 +77,28 @@ class MyAppState extends ChangeNotifier {
     linearFilters = newLinearFilters;
     notifyListeners();
   }
+
+  convertToGrayscale() async {
+    if (currentImage == null) return;
+
+    var fileRaw =
+        await currentImage!.toByteData(format: ui.ImageByteFormat.rawRgba);
+    var pixels = fileRaw!.buffer.asUint8List();
+    for (var i = 0; i < pixels.lengthInBytes; i += 4) {
+      pixels[i] = pixels[i + 1] = pixels[i + 2] =
+          (0.3 * pixels[i] + 0.59 * pixels[i + 1] + 0.11 * pixels[i + 2])
+              .round();
+    }
+
+    ui.decodeImageFromPixels(
+      pixels,
+      currentImage!.width,
+      currentImage!.height,
+      ui.PixelFormat.rgba8888,
+      (image) {
+        currentImage = image;
+        notifyListeners();
+      },
+    );
+  }
 }
