@@ -73,23 +73,16 @@ class MyAppState extends ChangeNotifier {
     );
   }
 
-  updateLinearFilter(List<LinearFilter> newLinearFilters) {
-    linearFilters = newLinearFilters;
-    notifyListeners();
-  }
-
-  convertToGrayscale() async {
+  applyFilterWithExtraArg(
+      Function(Uint8List pixels, int width, int height, int extraArg) filter,
+      int extraArg) async {
     if (currentImage == null) return;
 
     var fileRaw =
         await currentImage!.toByteData(format: ui.ImageByteFormat.rawRgba);
     var pixels = fileRaw!.buffer.asUint8List();
-    for (var i = 0; i < pixels.lengthInBytes; i += 4) {
-      pixels[i] = pixels[i + 1] = pixels[i + 2] =
-          (0.3 * pixels[i] + 0.59 * pixels[i + 1] + 0.11 * pixels[i + 2])
-              .round();
-    }
-
+    pixels =
+        filter(pixels, currentImage!.width, currentImage!.height, extraArg);
     ui.decodeImageFromPixels(
       pixels,
       currentImage!.width,
@@ -100,5 +93,10 @@ class MyAppState extends ChangeNotifier {
         notifyListeners();
       },
     );
+  }
+
+  updateLinearFilter(List<LinearFilter> newLinearFilters) {
+    linearFilters = newLinearFilters;
+    notifyListeners();
   }
 }

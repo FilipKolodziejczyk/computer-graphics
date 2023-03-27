@@ -72,18 +72,3 @@ class OpenButton extends StatelessWidget {
     );
   }
 }
-
-class ConvertToGrayscaleButton extends StatelessWidget {
-  const ConvertToGrayscaleButton({super.key, required this.convertToGrayscale});
-  final Function() convertToGrayscale;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.format_color_reset_outlined),
-      tooltip: 'Convert to grayscale',
-      hoverColor: Colors.transparent,
-      onPressed: () => convertToGrayscale(),
-    );
-  }
-}

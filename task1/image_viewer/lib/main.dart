@@ -8,6 +8,7 @@ import 'widgets/imageActions.dart';
 import 'state.dart';
 import 'widgets/filterActions.dart';
 import 'widgets/filterManager.dart';
+import 'widgets/imageProcessingActions.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,18 +48,21 @@ class MyHomePage extends StatelessWidget {
     var saveImage = appState.saveImage;
     var restoreOriginalImage = appState.restoreOriginalImage;
     var applyFilter = appState.applyFilter;
+    var applyFilterWithExtraArg = appState.applyFilterWithExtraArg;
     var linearFilters = appState.linearFilters;
     var functionalFilters = appState.functionalFilters;
     var convolutionFilters = appState.convolutionFilters;
     var updateLinearFilter = appState.updateLinearFilter;
-    var convertToGrayscale = appState.convertToGrayscale;
 
     return Scaffold(
         appBar: AppBar(
           title: const Text('Image Viewer'),
           backgroundColor: Theme.of(context).focusColor,
           actions: [
-            ConvertToGrayscaleButton(convertToGrayscale: convertToGrayscale),
+            OctreeQuantizationButton(applyFilter: applyFilterWithExtraArg),
+            AverageDitheringYCbCrButton(applyFilter: applyFilterWithExtraArg),
+            AverageDitheringButton(applyFilter: applyFilterWithExtraArg),
+            ConvertToGrayscaleButton(applyFilter: applyFilter),
             FunctionalFiltersButton(
               applyFilter: applyFilter,
               functionalFilters: functionalFilters + linearFilters,
