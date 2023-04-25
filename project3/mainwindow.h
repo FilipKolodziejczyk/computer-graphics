@@ -1,21 +1,47 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "shape.h"
+#include "drawingarea.h"
+
 #include <QMainWindow>
 
-QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
-QT_END_NAMESPACE
-
-class MainWindow : public QMainWindow
-{
-    Q_OBJECT
+class MainWindow : public QMainWindow {
+Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    explicit MainWindow(QWidget *parent = nullptr);
+
+    ~MainWindow() override;
+
+private slots:
+
+    void open();
+
+    void save();
+
+    void penColor();
+
+    void penWidth();
 
 private:
-    Ui::MainWindow *ui;
+    void createActions(Tools initTool);
+
+    void createMenus();
+
+    DrawingArea *drawingArea;
+
+    QMenu *fileMenu;
+    QAction *openAction;
+    QAction *saveAction;
+    QAction *clearAction;
+
+    QMenu *toolsMenu;
+    QAction *penColorAction;
+    QAction *penWidthAction;
+    QActionGroup *toolsGroup;
+    QList<QAction *> toolsActions;
+    QAction *antyaliasingAction;
 };
+
 #endif // MAINWINDOW_H

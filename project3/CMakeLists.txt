@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(project3 VERSION 0.1 LANGUAGES CXX)
+project(cg-vector VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -14,48 +14,49 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 set(PROJECT_SOURCES
         main.cpp
+
         mainwindow.cpp
         mainwindow.h
-        mainwindow.ui
+
+        drawingarea.cpp
+        drawingarea.h
+
+        circle.cpp
+        circle.h
+
+        line.h
+        line.cpp
+
+        shape.h
+
+        polygon.h
+        polygon.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(project3
+    qt_add_executable(cg-vector
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET project3 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
-    if(ANDROID)
-        add_library(project3 SHARED
-            ${PROJECT_SOURCES}
-        )
-# Define properties for Android with Qt 5 after find_package() calls as:
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
-    else()
-        add_executable(project3
-            ${PROJECT_SOURCES}
-        )
-    endif()
+    add_executable(cg-vector
+        ${PROJECT_SOURCES}
+    )
 endif()
 
-target_link_libraries(project3 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(cg-vector PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
-set_target_properties(project3 PROPERTIES
+set_target_properties(cg-vector PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
-    WIN32_EXECUTABLE TRUE
 )
 
-install(TARGETS project3
+install(TARGETS cg-vector
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(project3)
+    qt_finalize_executable(cg-vector)
 endif()
