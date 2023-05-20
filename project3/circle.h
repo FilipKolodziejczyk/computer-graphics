@@ -22,6 +22,7 @@ public:
 
 private:
     QPoint center;
+    QPoint snapped;
     int radius;
 
 };

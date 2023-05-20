@@ -1,9 +1,10 @@
 #include "circle.h"
 
-Circle::Circle(QPoint center, QColor color, int width) : Shape(color, width), center(center), radius(0) {}
+Circle::Circle(QPoint center, QColor color, int width) : Shape(color, width), center(center), snapped(center), radius(0) {}
 
 int Circle::snap(const QPoint &point) {
-    return getDistance(center, point);
+    snapped = point;
+    return abs(radius - getDistance(center, point));
 }
 
 void Circle::draw(QPainter &painter, bool antyaliasing) {
@@ -42,7 +43,12 @@ void Circle::draw(QPainter &painter, bool antyaliasing) {
 
 void Circle::move(QPoint newPosition) {
     Shape::move(newPosition);
-    center = newPosition;
+    int dx = newPosition.x() - snapped.x();
+    int dy = newPosition.y() - snapped.y();
+    center.setX(center.x() + dx);
+    center.setY(center.y() + dy);
+    snapped.setX(snapped.x() + dx);
+    snapped.setY(snapped.y() + dy);
 }
 
 void Circle::resize(QPoint newPosition) {
