@@ -5,7 +5,7 @@
 
 class Circle : public Shape {
 public:
-    Circle(QPoint center, QColor color, int width, bool antyaliased = false);
+    Circle(QPoint center, QColor color, int width);
 
     int snap(const QPoint &point) override;
 

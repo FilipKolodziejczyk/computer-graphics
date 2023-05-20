@@ -1,6 +1,6 @@
 #include "circle.h"
 
-Circle::Circle(QPoint center, QColor color, int width, bool antyaliased) : Shape(color, width), center(center),
+Circle::Circle(QPoint center, QColor color, int width) : Shape(color, width), center(center),
                                                                            radius(0) {
 }
 
