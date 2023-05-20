@@ -13,15 +13,15 @@ public:
 
     virtual int snap(const QPoint &point) { return 1000000; }
 
-    virtual void draw(QPainter &painter, bool antyaliasing) { }
+    virtual void draw(QPainter &painter, bool antyaliasing) {}
 
-    virtual void move(QPoint) { }
+    virtual void move(QPoint) {}
 
-    virtual void resize(QPoint) { }
+    virtual void resize(QPoint) {}
 
     void remove() { removed = true; }
 
-    void format (QColor color, int width) {
+    void format(QColor color, int width) {
         this->color = color;
         this->width = width;
     }

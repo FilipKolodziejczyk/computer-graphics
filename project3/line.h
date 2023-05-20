@@ -21,6 +21,7 @@ public:
 
 private:
     void drawStandard(QPainter &painter);
+
     void drawAntyaliased(QPainter &painter);
 
     QPoint start;
