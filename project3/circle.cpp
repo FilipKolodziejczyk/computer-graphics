@@ -1,8 +1,6 @@
 #include "circle.h"
 
-Circle::Circle(QPoint center, QColor color, int width) : Shape(color, width), center(center),
-                                                                           radius(0) {
-}
+Circle::Circle(QPoint center, QColor color, int width) : Shape(color, width), center(center), radius(0) {}
 
 int Circle::snap(const QPoint &point) {
     return getDistance(center, point);

@@ -7,16 +7,17 @@
 #include <QImage>
 
 enum Tools {
-    line, circle, polygon, mov, res, rem, format
+    line, circle, rectangle, polygon, mov, res, rem, format
 };
 
-constexpr std::initializer_list<std::pair<Tools, const char *>> tools = {{line,    "Line"},
-                                                                         {circle,  "Circle"},
-                                                                         {polygon, "Polygon"},
-                                                                         {mov,     "Move"},
-                                                                         {res,     "Resize"},
-                                                                         {rem,     "Remove"},
-                                                                         {format,  "Format"}};
+constexpr std::initializer_list<std::pair<Tools, const char *>> tools = {{line,      "Line"},
+                                                                         {circle,    "Circle"},
+                                                                         {rectangle, "Rectangle"},
+                                                                         {polygon,   "Polygon"},
+                                                                         {mov,       "Move"},
+                                                                         {res,       "Resize"},
+                                                                         {rem,       "Remove"},
+                                                                         {format,    "Format"}};
 
 class DrawingArea : public QWidget {
 Q_OBJECT

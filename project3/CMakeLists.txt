@@ -31,32 +31,35 @@ set(PROJECT_SOURCES
 
         polygon.h
         polygon.cpp
-)
 
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+        rectangle.h
+        rectangle.cpp
+        )
+
+if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(cg-vector
-        MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
-    )
-else()
+            MANUAL_FINALIZATION
+            ${PROJECT_SOURCES}
+            )
+else ()
     add_executable(cg-vector
-        ${PROJECT_SOURCES}
-    )
-endif()
+            ${PROJECT_SOURCES}
+            )
+endif ()
 
 target_link_libraries(cg-vector PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 set_target_properties(cg-vector PROPERTIES
-    MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
-    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    MACOSX_BUNDLE TRUE
-)
+        MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
+        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+        MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+        MACOSX_BUNDLE TRUE
+        )
 
 install(TARGETS cg-vector
-    BUNDLE DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        BUNDLE DESTINATION .
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-if(QT_VERSION_MAJOR EQUAL 6)
+if (QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(cg-vector)
-endif()
+endif ()

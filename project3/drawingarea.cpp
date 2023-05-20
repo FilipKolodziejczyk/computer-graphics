@@ -2,6 +2,7 @@
 #include "line.h"
 #include "circle.h"
 #include "polygon.h"
+#include "rectangle.h"
 
 #include <QPainter>
 #include <QMouseEvent>
@@ -33,6 +34,8 @@ bool DrawingArea::open(const QString &fileName) {
                 shapes.append(Line::deserialise(xmlReader));
             } else if (shapeName == "circle") {
                 shapes.append(Circle::deserialise(xmlReader));
+            } else if (shapeName == "rectangle") {
+                shapes.append(Rectangle::deserialise(xmlReader));
             } else if (shapeName == "polygon") {
                 shapes.append(Polygon::deserialise(xmlReader));
             }
@@ -94,6 +97,10 @@ void DrawingArea::mousePressEvent(QMouseEvent *event) {
             shapes.append(new Circle(event->pos(), penColor, penWidth));
             currentShape = shapes.last();
             break;
+        case rectangle:
+            shapes.append(new Rectangle(event->pos(), penColor, penWidth));
+            currentShape = shapes.last();
+            break;
         case polygon: {
             auto closestShape = snapClosestShape(event->pos());
             Polygon *polygon = dynamic_cast<Polygon *>(closestShape);
@@ -141,6 +148,7 @@ void DrawingArea::mouseMoveEvent(QMouseEvent *event) {
     switch (tool) {
         case line:
         case circle:
+        case rectangle:
             currentShape->resize(event->pos());
             break;
 

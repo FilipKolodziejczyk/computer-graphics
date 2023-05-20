@@ -71,8 +71,8 @@ void Polygon::close() {
 void Polygon::serialise(QXmlStreamWriter &writer) {
     writer.writeStartElement("polygon");
     QString pointsString;
-    for (int i = 0; i < points.size(); i++)
-        pointsString += QString::number(points[i].x()) + "," + QString::number(points[i].y()) + ";";
+    for (auto point : points)
+        pointsString += QString::number(point.x()) + "," + QString::number(point.y()) + ";";
     writer.writeAttribute("points", pointsString);
     writer.writeAttribute("color", QString::number(color.red()) + "," + QString::number(color.green()) + "," +
                                    QString::number(color.blue()));
