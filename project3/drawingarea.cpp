@@ -8,7 +8,6 @@
 #include <QMouseEvent>
 #include <QtCore/qfile.h>
 #include <QXmlStreamWriter>
-#include <QDebug>
 
 DrawingArea::DrawingArea(QWidget *parent) : QWidget(parent), penWidth(1), penColor(Qt::black), antyaliasing(false),
                                             tool(line) {
@@ -230,7 +229,7 @@ void DrawingArea::paintEvent(QPaintEvent *event) {
 Shape *DrawingArea::snapClosestShape(const QPoint &point) const {
     int minDistance = 1000000;
     Shape *closestShape = nullptr;
-    for (auto shape : shapes) {
+    for (auto shape: shapes) {
         auto distance = shape->snap(point);
         if (distance < minDistance) {
             minDistance = distance;

@@ -23,9 +23,9 @@ public:
 
 
 private:
-    QPoint center;
-    QPoint snapped;
-    int radius;
+    QPoint _center;
+    QPoint _snapped;
+    int _radius;
 
 };
 

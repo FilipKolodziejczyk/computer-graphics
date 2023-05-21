@@ -7,20 +7,19 @@
 #include <QPen>
 #include <QString>
 
-Line::Line(QPoint start, QColor color, int width) : Shape(color, width), start(start), end(start) {
+Line::Line(QPoint start, QColor color, int width) : Shape(color, width), _start(start), _end(start) {
 }
 
 int Line::snap(const QPoint &point) {
-    int distance = getDistance(start, point);
-    int distance2 = getDistance(end, point);
+    int distance = qRound(getDistance(_start, point));
+    int distance2 = qRound(getDistance(_end, point));
     if (distance < distance2)
-        std::swap(start, end);
+        std::swap(_start, _end);
     return std::min(distance, distance2);
 }
 
 void Line::draw(QPainter &painter, bool antyaliasing) {
-    Shape::draw(painter, antyaliasing);
-    painter.setPen(QPen(color, 1));
+    painter.setPen(QPen(_color, 1));
 
     if (antyaliasing) {
         drawAntyaliased(painter);
@@ -30,26 +29,24 @@ void Line::draw(QPainter &painter, bool antyaliasing) {
 }
 
 void Line::move(QPoint newEnd) {
-    Shape::move(newEnd);
-    int dx = newEnd.x() - end.x();
-    int dy = newEnd.y() - end.y();
-    start.setX(start.x() + dx);
-    start.setY(start.y() + dy);
-    end = newEnd;
+    int dx = newEnd.x() - _end.x();
+    int dy = newEnd.y() - _end.y();
+    _start.setX(_start.x() + dx);
+    _start.setY(_start.y() + dy);
+    _end = newEnd;
 }
 
 void Line::resize(QPoint newEnd) {
-    Shape::resize(newEnd);
-    end = newEnd;
+    _end = newEnd;
 }
 
 void Line::serialise(QXmlStreamWriter &writer) {
     writer.writeStartElement("line");
-    writer.writeAttribute("start", QString::number(start.x()) + "," + QString::number(start.y()));
-    writer.writeAttribute("end", QString::number(end.x()) + "," + QString::number(end.y()));
-    writer.writeAttribute("color", QString::number(color.red()) + "," + QString::number(color.green()) + "," +
-                                   QString::number(color.blue()));
-    writer.writeAttribute("width", QString::number(width));
+    writer.writeAttribute("_start", QString::number(_start.x()) + "," + QString::number(_start.y()));
+    writer.writeAttribute("_end", QString::number(_end.x()) + "," + QString::number(_end.y()));
+    writer.writeAttribute("_color", QString::number(_color.red()) + "," + QString::number(_color.green()) + "," +
+                                    QString::number(_color.blue()));
+    writer.writeAttribute("_width", QString::number(_width));
     writer.writeEndElement();
 }
 
@@ -58,40 +55,36 @@ Line *Line::deserialise(QXmlStreamReader &reader) {
     QPoint end;
     QColor color;
     int width = 0;
-    bool antyaliased = false;
 
     QXmlStreamAttributes attributes = reader.attributes();
-    if (attributes.hasAttribute("start")) {
-        QStringList startList = attributes.value("start").toString().split(",");
+    if (attributes.hasAttribute("_start")) {
+        QStringList startList = attributes.value("_start").toString().split(",");
         start.setX(startList[0].toInt());
         start.setY(startList[1].toInt());
     }
-    if (attributes.hasAttribute("end")) {
-        QStringList endList = attributes.value("end").toString().split(",");
+    if (attributes.hasAttribute("_end")) {
+        QStringList endList = attributes.value("_end").toString().split(",");
         end.setX(endList[0].toInt());
         end.setY(endList[1].toInt());
     }
-    if (attributes.hasAttribute("color")) {
-        QStringList colorList = attributes.value("color").toString().split(",");
+    if (attributes.hasAttribute("_color")) {
+        QStringList colorList = attributes.value("_color").toString().split(",");
         color.setRed(colorList[0].toInt());
         color.setGreen(colorList[1].toInt());
         color.setBlue(colorList[2].toInt());
     }
-    if (attributes.hasAttribute("width")) {
-        width = attributes.value("width").toInt();
-    }
-    if (attributes.hasAttribute("antyaliased")) {
-        antyaliased = attributes.value("antyaliased").toInt();
+    if (attributes.hasAttribute("_width")) {
+        width = attributes.value("_width").toInt();
     }
 
     auto *line = new Line(start, color, width);
-    line->end = end;
+    line->_end = end;
     return line;
 }
 
 void Line::drawStandard(QPainter &painter) {
-    QPoint start = this->start;
-    QPoint end = this->end;
+    QPoint start = this->_start;
+    QPoint end = this->_end;
     if (start.x() > end.x())
         std::swap(start, end);
 
@@ -144,8 +137,8 @@ void Line::drawStandard(QPainter &painter) {
 }
 
 void Line::drawAntyaliased(QPainter &painter) {
-    QPoint start = this->start;
-    QPoint end = this->end;
+    QPoint start = this->_start;
+    QPoint end = this->_end;
 
     bool reversed = std::abs(end.y() - start.y()) > std::abs(end.x() - start.x());
     if (reversed) {
@@ -158,7 +151,7 @@ void Line::drawAntyaliased(QPainter &painter) {
 
     double d = 1.0 * (end.y() - start.y()) / (end.x() - start.x());
 
-    int x = std::round(start.x());
+    int x = start.x();
     double temp;
     double yFraction = modf(start.y() + d * (x - start.x()), &temp);
     auto yInt = static_cast<int>(temp);
@@ -166,18 +159,18 @@ void Line::drawAntyaliased(QPainter &painter) {
     double xi = 1 - modf(start.x() + 0.5, &temp);
 
     if (reversed) {
-        color.setAlphaF((1 - yFraction) * xi);
-        painter.setPen(QPen(color));
+        _color.setAlphaF(static_cast<float>((1 - yFraction) * xi));
+        painter.setPen(QPen(_color));
         brush(painter, yInt, x);
-        color.setAlphaF(yFraction * xi);
-        painter.setPen(QPen(color));
+        _color.setAlphaF(static_cast<float>((yFraction) * xi));
+        painter.setPen(QPen(_color));
         brush(painter, yInt + 1, x);
     } else {
-        color.setAlphaF((1 - yFraction) * xi);
-        painter.setPen(QPen(color));
+        _color.setAlphaF(static_cast<float>((1 - yFraction) * xi));
+        painter.setPen(QPen(_color));
         brush(painter, x, yInt);
-        color.setAlphaF(yFraction * xi);
-        painter.setPen(QPen(color));
+        _color.setAlphaF(static_cast<float>((yFraction) * xi));
+        painter.setPen(QPen(_color));
         brush(painter, x, yInt + 1);
     }
 
@@ -185,60 +178,60 @@ void Line::drawAntyaliased(QPainter &painter) {
     double n = modf(q, &temp);
     // Strange error, using temp instead of std::floor(q) beaks it
 
-    for (int a = std::round(start.x()) + 1; a <= std::round(end.x()) - 1; a++) {
+    for (int a = start.x() + 1; a <= end.x() - 1; a++) {
         if (reversed) {
-            color.setAlphaF(1 - n);
-            painter.setPen(QPen(color));
+            _color.setAlphaF(1 - static_cast<float>(n));
+            painter.setPen(QPen(_color));
             brush(painter, std::floor(q), a);
-            color.setAlphaF(n);
-            painter.setPen(QPen(color));
-            brush(painter, std::floor(q) + 1, a);
+            _color.setAlphaF(static_cast<float>(n));
+            painter.setPen(QPen(_color));
+            brush(painter, qFloor(q) + 1, a);
         } else {
-            color.setAlphaF(1 - n);
-            painter.setPen(QPen(color));
+            _color.setAlphaF(1 - static_cast<float>(n));
+            painter.setPen(QPen(_color));
             brush(painter, a, std::floor(q));
-            color.setAlphaF(n);
-            painter.setPen(QPen(color));
-            brush(painter, a, std::floor(q) + 1);
+            _color.setAlphaF(static_cast<float>(n));
+            painter.setPen(QPen(_color));
+            brush(painter, a, qFloor(q) + 1);
         }
         q += d;
     }
 
-    color.setAlphaF(1);
+    _color.setAlphaF(1);
 }
 
 QList<Shape *> Line::LiangBarskyClip(const Rectangle *clipper) const {
-    float dx = end.x() - start.x();
-    float dy = end.y() - start.y();
+    double dx = _end.x() - _start.x();
+    double dy = _end.y() - _start.y();
+    double tE = 0, tL = 1;
 
-    float tE = 0, tL = 1;
-    if (Clip(-dx, start.x() - clipper->left(), tE, tL))
-        if (Clip(dx, clipper->right() - start.x(), tE, tL))
-            if (Clip(-dy, start.y() - clipper->top(), tE, tL))
-                if (Clip(dy, clipper->bottom() - start.y(), tE, tL)) {
-                    auto *line = new Line(QPoint(start.x(), start.y()), QColor(Qt::red), width);
-                    line->resize(end);
+    if (Clip(-dx, _start.x() - clipper->left(), tE, tL))
+        if (Clip(dx, clipper->right() - _start.x(), tE, tL))
+            if (Clip(-dy, _start.y() - clipper->top(), tE, tL))
+                if (Clip(dy, clipper->bottom() - _start.y(), tE, tL)) {
+                    auto *line = new Line(QPoint(_start.x(), _start.y()), QColor(Qt::red), _width);
+                    line->resize(_end);
                     if (tL < 1) {
-                        line->end.setX(start.x() + dx * tL);
-                        line->end.setY(start.y() + dy * tL);
+                        line->_end.setX(qRound(_start.x() + dx * tL));
+                        line->_end.setY(qRound(_start.y() + dy * tL));
                     }
                     if (tE > 0) {
-                        line->start.setX(start.x() + dx * tE);
-                        line->start.setY(start.y() + dy * tE);
+                        line->_start.setX(qRound(_start.x() + dx * tE));
+                        line->_start.setY(qRound(_start.y() + dy * tE));
                     }
                     return QList<Shape *>{line};
                 }
     return QList<Shape *>{};
 }
 
-bool Line::Clip(float denom, float numer, float& tE, float& tL) {
+bool Line::Clip(double denom, double numer, double &tE, double &tL) {
     if (denom == 0) { // parallel
         if (numer < 0) // outside - discard
             return false;
         return true; //skip to next edge
     }
 
-    float t = numer / denom;
+    double t = numer / denom;
     if (denom < 0) { // potentially leaving
         if (t > tL)
             return false; // outside - discard

@@ -22,17 +22,17 @@ public:
 
     static Rectangle *deserialise(QXmlStreamReader &reader);
 
-    int left() const;
+    [[nodiscard]] int left() const;
 
-    int right() const;
+    [[nodiscard]] int right() const;
 
-    int top() const;
+    [[nodiscard]] int top() const;
 
-    int bottom() const;
+    [[nodiscard]] int bottom() const;
 
 private:
-    QPoint corners[4];
-    int snapPointIndex;
+    QPoint _corners[4];
+    int _snapPointIndex;
 };
 
 #endif // RECTANGLE_H

@@ -24,7 +24,7 @@ public:
 
     void close();
 
-    bool isClosed() const { return closed; }
+    [[nodiscard]] bool isClosed() const { return _closed; }
 
     void serialise(QXmlStreamWriter &writer) override;
 
@@ -32,9 +32,9 @@ public:
 
 
 private:
-    QList<QPoint> points;
-    int snapped = 1;
-    bool closed = false;
+    QList<QPoint> _points;
+    int _snapped = 1;
+    bool _closed = false;
 };
 
 #endif // POLYGON_H

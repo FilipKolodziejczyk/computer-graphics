@@ -12,43 +12,43 @@ class Rectangle;
 class Shape {
 
 public:
-    Shape(QColor color, int width) : color(color), width(width) {}
+    Shape(QColor color, int width) : _color(color), _width(width) {}
 
-    virtual int snap(const QPoint &point) { return 1000000; }
+    virtual int snap(const QPoint &point) = 0;
 
-    virtual void draw(QPainter &painter, bool antyaliasing) {}
+    virtual void draw(QPainter &painter, bool antyaliasing) = 0;
 
-    virtual void move(QPoint) {}
+    virtual void move(QPoint) = 0;
 
-    virtual void resize(QPoint) {}
+    virtual void resize(QPoint) = 0;
 
-    virtual QList<Shape *> LiangBarskyClip(const Rectangle *clipper) const { return {}; }
+    virtual QList<Shape *> LiangBarskyClip(const Rectangle *clipper) const = 0;
 
-    void remove() { removed = true; }
+    [[maybe_unused]] void remove() { _removed = true; }
 
     void format(QColor color, int width) {
-        this->color = color;
-        this->width = width;
+        this->_color = color;
+        this->_width = width;
     }
 
-    virtual void serialise(QXmlStreamWriter &) {}
+    virtual void serialise(QXmlStreamWriter &) = 0;
 
 protected:
-    static int getDistance(QPoint a, QPoint b) {
+    static double getDistance(QPoint a, QPoint b) {
         return sqrt((a.x() - b.x()) * (a.x() - b.x()) + (a.y() - b.y()) * (a.y() - b.y()));
     }
 
     void brush(QPainter &painter, int x, int y) {
-        painter.setPen(QPen(color, 1));
-        for (int i = -width + 1; i < width; i++)
-            for (int j = -width + 1; j < width; j++)
-                if (i * i + j * j <= width * width)
+        painter.setPen(QPen(_color, 1));
+        for (int i = -_width + 1; i < _width; i++)
+            for (int j = -_width + 1; j < _width; j++)
+                if (i * i + j * j <= _width * _width)
                     painter.drawPoint(x + i, y + j);
     }
 
-    QColor color;
-    int width;
-    bool removed = false;
+    QColor _color;
+    [[maybe_unused]] int _width;
+    [[maybe_unused]] bool _removed = false;
 
 };
 

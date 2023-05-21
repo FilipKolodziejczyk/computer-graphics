@@ -60,7 +60,7 @@ protected:
 private:
     void paintEvent(QPaintEvent *event) override;
 
-    Shape *snapClosestShape(const QPoint &point) const;
+    [[nodiscard]] Shape *snapClosestShape(const QPoint &point) const;
 
     QImage image;
     QImage backupImage;

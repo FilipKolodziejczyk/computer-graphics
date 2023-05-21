@@ -2,64 +2,61 @@
 #include "polygon.h"
 #include "line.h"
 
-Polygon::Polygon(QPoint start, QColor color, int width) : Shape(color, width) {
-    points.append(start);
-    points.append(start);
+Polygon::Polygon(QPoint start, QColor color, int width) : Shape(color, width), _closed(false) {
+    _points.append(start);
+    _points.append(start);
 }
 
 int Polygon::snap(const QPoint &point) {
     int minIndex = 0;
-    int minDistance = getDistance(points[0], point);
-    for (int i = 1; i < points.size(); i++) {
-        int distance = getDistance(points[i], point);
+    int minDistance = qRound(getDistance(_points[0], point));
+    for (int i = 1; i < _points.size(); i++) {
+        int distance = qRound(getDistance(_points[i], point));
         if (distance < minDistance) {
             minDistance = distance;
             minIndex = i;
         }
     }
-    snapped = minIndex;
+    _snapped = minIndex;
     if (minIndex == 0) {
-        std::reverse(points.begin(), points.end());
-        snapped = points.size() - 1;
+        std::reverse(_points.begin(), _points.end());
+        _snapped = static_cast<int>(_points.size()) - 1;
     }
     return minDistance;
 }
 
 void Polygon::draw(QPainter &painter, bool antyaliasing) {
-    Shape::draw(painter, antyaliasing);
-    painter.setPen(QPen(color, width));
-    for (int i = 0; i < points.size() - 1; i++) {
-        Line line(points[i], color, width);
-        line.resize(points[i + 1]);
+    painter.setPen(QPen(_color, _width));
+    for (int i = 0; i < _points.size() - 1; i++) {
+        Line line(_points[i], _color, _width);
+        line.resize(_points[i + 1]);
         line.draw(painter, antyaliasing);
     }
 }
 
 void Polygon::move(QPoint newEnd) {
-    Shape::move(newEnd);
-    int dx = newEnd.x() - points[snapped].x();
-    int dy = newEnd.y() - points[snapped].y();
-    for (int i = 0; i < points.size(); i++) {
-        points[i].setX(points[i].x() + dx);
-        points[i].setY(points[i].y() + dy);
+    int dx = newEnd.x() - _points[_snapped].x();
+    int dy = newEnd.y() - _points[_snapped].y();
+    for (auto &_point: _points) {
+        _point.setX(_point.x() + dx);
+        _point.setY(_point.y() + dy);
     }
 }
 
 void Polygon::resize(QPoint newEnd) {
-    Shape::resize(newEnd);
-    points[snapped] = newEnd;
-    if (closed && (snapped == 0 || snapped == points.size() - 1))
-        points[0] = points[points.size() - 1] = newEnd;
-    else if (points.length() > 2 && getDistance(points[0], points[points.size() - 1]) < 25)
-        points.last() = QPoint(points[0]);
+    _points[_snapped] = newEnd;
+    if (_closed && (_snapped == 0 || _snapped == _points.size() - 1))
+        _points[0] = _points[_points.size() - 1] = newEnd;
+    else if (_points.length() > 2 && getDistance(_points[0], _points[_points.size() - 1]) < 25)
+        _points.last() = QPoint(_points[0]);
 }
 
 QList<Shape *> Polygon::LiangBarskyClip(const Rectangle *clipper) const {
     QList<Shape *> clippedShapes;
-    long long n = isClosed() ? points.size() - 1 : points.size();
-    for (int i = 0; i < n; i++) {
-        Line line(points[i], color, width);
-        line.resize(points[i + 1]);
+
+    for (int i = 0; i < _points.size() - 1; i++) {
+        Line line(_points[i], _color, _width);
+        line.resize(_points[i + 1]);
         QList<Shape *> clippedLine = line.LiangBarskyClip(clipper);
         for (auto &shape: clippedLine)
             clippedShapes.append(shape);
@@ -69,28 +66,28 @@ QList<Shape *> Polygon::LiangBarskyClip(const Rectangle *clipper) const {
 }
 
 bool Polygon::isEnd() {
-    return snapped == points.size() - 1 || snapped == 0;
+    return _snapped == _points.size() - 1 || _snapped == 0;
 }
 
 void Polygon::addPoint(QPoint point) {
-    points.append(point);
-    snapped = points.size() - 1;
+    _points.append(point);
+    _snapped = static_cast<int>(_points.size()) - 1;
 }
 
 void Polygon::close() {
-    if (points.length() > 2 && points.first() == points.last())
-        closed = true;
+    if (_points.length() > 2 && _points.first() == _points.last())
+        _closed = true;
 }
 
 void Polygon::serialise(QXmlStreamWriter &writer) {
     writer.writeStartElement("polygon");
     QString pointsString;
-    for (auto point : points)
+    for (auto point: _points)
         pointsString += QString::number(point.x()) + "," + QString::number(point.y()) + ";";
-    writer.writeAttribute("points", pointsString);
-    writer.writeAttribute("color", QString::number(color.red()) + "," + QString::number(color.green()) + "," +
-                                   QString::number(color.blue()));
-    writer.writeAttribute("width", QString::number(width));
+    writer.writeAttribute("_points", pointsString);
+    writer.writeAttribute("_color", QString::number(_color.red()) + "," + QString::number(_color.green()) + "," +
+                                    QString::number(_color.blue()));
+    writer.writeAttribute("_width", QString::number(_width));
     writer.writeEndElement();
 }
 
@@ -101,22 +98,25 @@ Polygon *Polygon::deserialise(QXmlStreamReader &reader) {
     bool closed = false;
 
     QXmlStreamAttributes attributes = reader.attributes();
-    if (attributes.hasAttribute("points")) {
-        QString pointsString = attributes.value("points").toString();
+    if (attributes.hasAttribute("_points")) {
+        QString pointsString = attributes.value("_points").toString();
         QStringList pointsList = pointsString.split(";");
         for (int i = 0; i < pointsList.size() - 1; i++) {
             QStringList pointString = pointsList[i].split(",");
             points.append(QPoint(pointString[0].toInt(), pointString[1].toInt()));
         }
     }
-    if (attributes.hasAttribute("color")) {
-        QStringList colorString = attributes.value("color").toString().split(",");
+    if (attributes.hasAttribute("_color")) {
+        QStringList colorString = attributes.value("_color").toString().split(",");
         color = QColor(colorString[0].toInt(), colorString[1].toInt(), colorString[2].toInt());
     }
-    if (attributes.hasAttribute("width"))
-        width = attributes.value("width").toInt();
+    if (attributes.hasAttribute("_width"))
+        width = attributes.value("_width").toInt();
+    if (points[0] == points[points.size() - 1])
+        closed = true;
 
     auto *polygon = new Polygon(points[0], color, width);
-    polygon->points = points;
+    polygon->_points = points;
+    polygon->_closed = closed;
     return polygon;
 }

@@ -28,10 +28,10 @@ private:
 
     void drawAntyaliased(QPainter &painter);
 
-    static bool Clip(float denom, float numer, float& tE, float& tL);
+    static bool Clip(double denom, double numer, double &tE, double &tL);
 
-    QPoint start;
-    QPoint end;
+    QPoint _start;
+    QPoint _end;
 };
 
 #endif // LINE_H
