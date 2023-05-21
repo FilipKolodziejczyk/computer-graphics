@@ -7,7 +7,7 @@
 #include <QImage>
 
 enum Tools {
-    line, circle, rectangle, polygon, mov, res, rem, format
+    line, circle, rectangle, polygon, mov, res, rem, format, clip
 };
 
 constexpr std::initializer_list<std::pair<Tools, const char *>> tools = {{line,      "Line"},
@@ -17,7 +17,8 @@ constexpr std::initializer_list<std::pair<Tools, const char *>> tools = {{line, 
                                                                          {mov,       "Move"},
                                                                          {res,       "Resize"},
                                                                          {rem,       "Remove"},
-                                                                         {format,    "Format"}};
+                                                                         {format,    "Format"},
+                                                                         {clip,      "Clip"}};
 
 class DrawingArea : public QWidget {
 Q_OBJECT
@@ -64,11 +65,12 @@ private:
     QImage image;
     QImage backupImage;
     QList<Shape *> shapes;
-    Shape *currentShape;
+    Shape *currentShape{};
     QColor penColor;
     int penWidth;
     Tools tool;
     bool antyaliasing;
+    Shape *clippedShape{};
 };
 
 #endif // DRAWINGAREA_H

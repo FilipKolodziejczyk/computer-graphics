@@ -56,6 +56,10 @@ void Circle::resize(QPoint newPosition) {
     radius = getDistance(center, newPosition);
 }
 
+QList<Shape *> Circle::LiangBarskyClip(const Rectangle *clipper) const {
+    qDebug() << "Circle cannot be clipped";
+}
+
 void Circle::serialise(QXmlStreamWriter &writer) {
     writer.writeStartElement("circle");
     writer.writeAttribute("center", QString::number(center.x()) + "," + QString::number(center.y()));

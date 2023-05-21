@@ -16,6 +16,8 @@ public:
 
     void resize(QPoint newEnd) override;
 
+    QList<Shape *> LiangBarskyClip(const Rectangle *clipper) const override;
+
     bool isEnd();
 
     void addPoint(QPoint point);

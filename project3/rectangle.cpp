@@ -51,6 +51,19 @@ void Rectangle::resize(QPoint newEnd) {
     }
 }
 
+QList<Shape *> Rectangle::LiangBarskyClip(const Rectangle *clipper) const {
+    QList<Shape *> clippedShapes;
+    for (int i = 0; i < 4; i++) {
+        Line line(corners[i], color, width);
+        line.resize(corners[(i + 1) % 4]);
+        QList<Shape *> clippedLine = line.LiangBarskyClip(clipper);
+        for (auto &shape: clippedLine)
+            clippedShapes.append(shape);
+    }
+
+    return clippedShapes;
+}
+
 void Rectangle::serialise(QXmlStreamWriter &writer) {
     writer.writeStartElement("rectangle");
     QString cornersString;
@@ -85,4 +98,20 @@ Rectangle *Rectangle::deserialise(QXmlStreamReader &reader) {
         rectangle->corners[i] = corners[i];
 
     return rectangle;
+}
+
+int Rectangle::left() const {
+    return std::min(corners[0].x(), corners[2].x());
+}
+
+int Rectangle::right() const {
+    return std::max(corners[0].x(), corners[2].x());
+}
+
+int Rectangle::top() const {
+    return std::min(corners[0].y(), corners[2].y());
+}
+
+int Rectangle::bottom() const {
+    return std::max(corners[0].y(), corners[2].y());
 }

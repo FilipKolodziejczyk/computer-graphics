@@ -1,4 +1,6 @@
 #include "line.h"
+#include "rectangle.h"
+
 #include "QtCore/qdebug.h"
 #include <QPixmap>
 #include <QPainter>
@@ -203,4 +205,50 @@ void Line::drawAntyaliased(QPainter &painter) {
     }
 
     color.setAlphaF(1);
+}
+
+QList<Shape *> Line::LiangBarskyClip(const Rectangle *clipper) const {
+    float dx = end.x() - start.x();
+    float dy = end.y() - start.y();
+
+    float tE = 0, tL = 1;
+    if (Clip(-dx, start.x() - clipper->left(), tE, tL))
+        if (Clip(dx, clipper->right() - start.x(), tE, tL))
+            if (Clip(-dy, start.y() - clipper->top(), tE, tL))
+                if (Clip(dy, clipper->bottom() - start.y(), tE, tL)) {
+                    auto *line = new Line(QPoint(start.x(), start.y()), QColor(Qt::red), width);
+                    line->resize(end);
+                    if (tL < 1) {
+                        line->end.setX(start.x() + dx * tL);
+                        line->end.setY(start.y() + dy * tL);
+                    }
+                    if (tE > 0) {
+                        line->start.setX(start.x() + dx * tE);
+                        line->start.setY(start.y() + dy * tE);
+                    }
+                    return QList<Shape *>{line};
+                }
+    return QList<Shape *>{};
+}
+
+bool Line::Clip(float denom, float numer, float& tE, float& tL) {
+    if (denom == 0) { // parallel
+        if (numer < 0) // outside - discard
+            return false;
+        return true; //skip to next edge
+    }
+
+    float t = numer / denom;
+    if (denom < 0) { // potentially leaving
+        if (t > tL)
+            return false; // outside - discard
+        if (t > tE)
+            tE = t;
+    } else {
+        if (t < tE)
+            return false; // outside - discard
+        if (t < tL)
+            tL = t;
+    }
+    return true;
 }

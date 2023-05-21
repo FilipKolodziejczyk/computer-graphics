@@ -15,6 +15,8 @@ public:
 
     void resize(QPoint newPerimeterPoint) override;
 
+    QList<Shape *> LiangBarskyClip(const Rectangle *clipper) const override;
+
     void serialise(QXmlStreamWriter &writer) override;
 
     static Circle *deserialise(QXmlStreamReader &reader);

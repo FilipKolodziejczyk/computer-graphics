@@ -54,6 +54,20 @@ void Polygon::resize(QPoint newEnd) {
         points.last() = QPoint(points[0]);
 }
 
+QList<Shape *> Polygon::LiangBarskyClip(const Rectangle *clipper) const {
+    QList<Shape *> clippedShapes;
+    long long n = isClosed() ? points.size() - 1 : points.size();
+    for (int i = 0; i < n; i++) {
+        Line line(points[i], color, width);
+        line.resize(points[i + 1]);
+        QList<Shape *> clippedLine = line.LiangBarskyClip(clipper);
+        for (auto &shape: clippedLine)
+            clippedShapes.append(shape);
+    }
+
+    return clippedShapes;
+}
+
 bool Polygon::isEnd() {
     return snapped == points.size() - 1 || snapped == 0;
 }

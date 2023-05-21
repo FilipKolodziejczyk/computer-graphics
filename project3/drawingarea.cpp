@@ -8,6 +8,7 @@
 #include <QMouseEvent>
 #include <QtCore/qfile.h>
 #include <QXmlStreamWriter>
+#include <QDebug>
 
 DrawingArea::DrawingArea(QWidget *parent) : QWidget(parent), penWidth(1), penColor(Qt::black), antyaliasing(false),
                                             tool(line) {
@@ -103,7 +104,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event) {
             break;
         case polygon: {
             auto closestShape = snapClosestShape(event->pos());
-            Polygon *polygon = dynamic_cast<Polygon *>(closestShape);
+            auto *polygon = dynamic_cast<Polygon *>(closestShape);
             if (polygon != nullptr && !polygon->isClosed() && polygon->isEnd()) {
                 polygon->addPoint(event->pos());
                 currentShape = closestShape;
@@ -120,10 +121,11 @@ void DrawingArea::mousePressEvent(QMouseEvent *event) {
         case mov:
         case res:
         case rem:
-        case format:
+        case format: {
             auto closestShape = snapClosestShape(event->pos());
             if (!closestShape)
                 return;
+
             currentShape = closestShape;
             image.fill(qRgb(255, 255, 255));
             update();
@@ -132,11 +134,32 @@ void DrawingArea::mousePressEvent(QMouseEvent *event) {
             if (tool == format)
                 currentShape->format(penColor, penWidth);
             break;
+        }
+        case clip: {
+            auto closestShape = snapClosestShape(event->pos());
+            if (!closestShape)
+                return;
+
+            if (clippedShape == nullptr) {
+                clippedShape = closestShape;
+            } else {
+                auto *rectangle = dynamic_cast<Rectangle *>(closestShape);
+                if (rectangle != nullptr && clippedShape != rectangle) {
+                    auto newShapes = clippedShape->LiangBarskyClip(rectangle);
+                    for (auto &shape: newShapes)
+                        shapes.append(shape);
+                }
+
+                clippedShape = nullptr;
+            }
+        }
     }
 
-    if (tool == rem) {
+    if (tool == rem)
         shapes.removeOne(currentShape);
-    }
+
+    if (tool != clip)
+        clippedShape = nullptr;
 
     update();
 }
@@ -170,6 +193,7 @@ void DrawingArea::mouseMoveEvent(QMouseEvent *event) {
             break;
         case rem:
         case format:
+        case clip:
             return;
     }
 
@@ -206,11 +230,11 @@ void DrawingArea::paintEvent(QPaintEvent *event) {
 Shape *DrawingArea::snapClosestShape(const QPoint &point) const {
     int minDistance = 1000000;
     Shape *closestShape = nullptr;
-    for (int i = 0; i < shapes.size(); ++i) {
-        auto distance = shapes[i]->snap(point);
+    for (auto shape : shapes) {
+        auto distance = shape->snap(point);
         if (distance < minDistance) {
             minDistance = distance;
-            closestShape = shapes[i];
+            closestShape = shape;
         }
     }
 

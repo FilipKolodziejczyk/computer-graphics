@@ -5,6 +5,9 @@
 #include <QPainter>
 #include <QPen>
 #include <QXmlStreamWriter>
+#include <QDebug>
+
+class Rectangle;
 
 class Shape {
 
@@ -18,6 +21,8 @@ public:
     virtual void move(QPoint) {}
 
     virtual void resize(QPoint) {}
+
+    virtual QList<Shape *> LiangBarskyClip(const Rectangle *clipper) const { return {}; }
 
     void remove() { removed = true; }
 

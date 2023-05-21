@@ -3,6 +3,8 @@
 
 #include "shape.h"
 
+class Rectangle;
+
 class Line : public Shape {
 public:
     Line(QPoint start, QColor color, int width);
@@ -15,6 +17,8 @@ public:
 
     void resize(QPoint newEnd) override;
 
+    QList<Shape *> LiangBarskyClip(const Rectangle *clipper) const override;
+
     void serialise(QXmlStreamWriter &writer) override;
 
     static Line *deserialise(QXmlStreamReader &reader);
@@ -23,6 +27,8 @@ private:
     void drawStandard(QPainter &painter);
 
     void drawAntyaliased(QPainter &painter);
+
+    static bool Clip(float denom, float numer, float& tE, float& tL);
 
     QPoint start;
     QPoint end;
