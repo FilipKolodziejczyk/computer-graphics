@@ -53,6 +53,26 @@ void MainWindow::penWidth() {
         _drawingArea->setPenWidth(newWidth);
 }
 
+void MainWindow::fillingColor() {
+    QColor newColor = QColorDialog::getColor(_drawingArea->getFillingColor());
+    if (newColor.isValid())
+        _drawingArea->setFillingColor(newColor);
+}
+
+void MainWindow::fillingImage() {
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath());
+    if (!fileName.isEmpty()) {
+        QImage newImage;
+        if (newImage.load(fileName)) {
+            _drawingArea->setFillingImage(newImage);
+        }
+    }
+}
+
+void MainWindow::toggleFilling() {
+    _drawingArea->toggleFilling();
+}
+
 void MainWindow::createActions(Tools initTool) {
     _openAction = new QAction(tr("&Open..."), this);
     _openAction->setShortcuts(QKeySequence::Open);
@@ -61,12 +81,12 @@ void MainWindow::createActions(Tools initTool) {
 
     _saveAction = new QAction(tr("&Save..."), this);
     _saveAction->setShortcuts(QKeySequence::Save);
-    _saveAction->setStatusTip(tr("Save the image to disk"));
+    _saveAction->setStatusTip(tr("Save the _image to disk"));
     connect(_saveAction, &QAction::triggered, this, &MainWindow::save);
 
     _clearAction = new QAction(tr("&Clear"), this);
     _clearAction->setShortcuts(QKeySequence::Delete);
-    _clearAction->setStatusTip(tr("Clear the image"));
+    _clearAction->setStatusTip(tr("Clear the _image"));
     connect(_clearAction, &QAction::triggered, _drawingArea, &DrawingArea::clear);
 
     _penColorAction = new QAction(tr("&Pen Color..."), this);
@@ -76,6 +96,20 @@ void MainWindow::createActions(Tools initTool) {
     _penWidthAction = new QAction(tr("&Pen Width..."), this);
     _penWidthAction->setStatusTip(tr("Change the pen _width"));
     connect(_penWidthAction, &QAction::triggered, this, &MainWindow::penWidth);
+
+    _fillingColorAction = new QAction(tr("&Filling Color..."), this);
+    _fillingColorAction->setStatusTip(tr("Change the filling _color"));
+    connect(_fillingColorAction, &QAction::triggered, this, &MainWindow::fillingColor);
+
+    _fillingImageAction = new QAction(tr("&Filling Image..."), this);
+    _fillingImageAction->setStatusTip(tr("Change the filling _image"));
+    connect(_fillingImageAction, &QAction::triggered, this, &MainWindow::fillingImage);
+
+    _toggleFillingAction = new QAction(tr("&Filling with image"), this);
+    _toggleFillingAction->setStatusTip(tr("Toggle type of filling"));
+    _toggleFillingAction->setCheckable(true);
+    _toggleFillingAction->setChecked(_drawingArea->getIfFillingWithImage());
+    connect(_toggleFillingAction, &QAction::triggered, this, &MainWindow::toggleFilling);
 
     _toolsGroup = new QActionGroup(this);
     _toolsGroup->setExclusive(true);
@@ -108,6 +142,10 @@ void MainWindow::createMenus() {
     _toolsMenu = new QMenu(tr("&Tools"), this);
     _toolsMenu->addAction(_penColorAction);
     _toolsMenu->addAction(_penWidthAction);
+    _toolsMenu->addSeparator();
+    _toolsMenu->addAction(_fillingColorAction);
+    _toolsMenu->addAction(_fillingImageAction);
+    _toolsMenu->addAction(_toggleFillingAction);
     _toolsMenu->addSeparator();
     _toolsMenu->addActions(_toolsActions);
     _toolsMenu->addSeparator();

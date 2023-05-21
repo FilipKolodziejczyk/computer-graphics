@@ -24,6 +24,12 @@ private slots:
 
     void penWidth();
 
+    void fillingColor();
+
+    void fillingImage();
+
+    void toggleFilling();
+
 private:
     void createActions(Tools initTool);
 
@@ -39,6 +45,9 @@ private:
     QMenu *_toolsMenu{};
     QAction *_penColorAction{};
     QAction *_penWidthAction{};
+    QAction *_fillingColorAction{};
+    QAction *_fillingImageAction{};
+    QAction *_toggleFillingAction{};
     QActionGroup *_toolsGroup{};
     QList<QAction *> _toolsActions;
     QAction *_antyaliasingAction{};

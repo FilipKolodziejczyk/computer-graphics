@@ -9,13 +9,13 @@
 #include <QtCore/qfile.h>
 #include <QXmlStreamWriter>
 
-DrawingArea::DrawingArea(QWidget *parent) : QWidget(parent), penWidth(1), penColor(Qt::black), antyaliasing(false),
-                                            tool(line) {
+DrawingArea::DrawingArea(QWidget *parent) : QWidget(parent), _penWidth(1), _penColor(Qt::black), _antyaliasing(false),
+                                            _tool(line), _fillingWithImage(false) {
     setAttribute(Qt::WA_StaticContents);
     resize(1000, 1000);
     QImage initImage(size(), QImage::Format_ARGB32);
     initImage.fill(qRgb(255, 255, 255));
-    image = initImage;
+    _image = initImage;
 }
 
 bool DrawingArea::open(const QString &fileName) {
@@ -31,13 +31,13 @@ bool DrawingArea::open(const QString &fileName) {
         if (xmlReader.isStartElement()) {
             auto shapeName = xmlReader.name().toString();
             if (shapeName == "line") {
-                shapes.append(Line::deserialise(xmlReader));
+                _shapes.append(Line::deserialise(xmlReader));
             } else if (shapeName == "circle") {
-                shapes.append(Circle::deserialise(xmlReader));
+                _shapes.append(Circle::deserialise(xmlReader));
             } else if (shapeName == "rectangle") {
-                shapes.append(Rectangle::deserialise(xmlReader));
+                _shapes.append(Rectangle::deserialise(xmlReader));
             } else if (shapeName == "polygon") {
-                shapes.append(Polygon::deserialise(xmlReader));
+                _shapes.append(Polygon::deserialise(xmlReader));
             }
         }
     }
@@ -55,8 +55,8 @@ bool DrawingArea::save(const QString &fileName) {
     QXmlStreamWriter xmlWriter(&file);
     xmlWriter.setAutoFormatting(true);
     xmlWriter.writeStartDocument();
-    xmlWriter.writeStartElement("shapes");
-    for (auto &shape: shapes)
+    xmlWriter.writeStartElement("_shapes");
+    for (auto &shape: _shapes)
         shape->serialise(xmlWriter);
     xmlWriter.writeEndElement();
     xmlWriter.writeEndDocument();
@@ -65,21 +65,21 @@ bool DrawingArea::save(const QString &fileName) {
 }
 
 void DrawingArea::clear() {
-    shapes.clear();
-    image.fill(qRgb(255, 255, 255));
+    _shapes.clear();
+    _image.fill(qRgb(255, 255, 255));
     update();
 }
 
 void DrawingArea::setTool() {
     auto *action = qobject_cast<QAction *>(sender());
     if (action) {
-        tool = action->data().value<Tools>();
+        _tool = action->data().value<Tools>();
     }
 }
 
 void DrawingArea::toggleAntialysing() {
-    antyaliasing = !antyaliasing;
-    image.fill(qRgb(255, 255, 255));
+    _antyaliasing = !_antyaliasing;
+    _image.fill(qRgb(255, 255, 255));
     update();
 }
 
@@ -87,34 +87,34 @@ void DrawingArea::mousePressEvent(QMouseEvent *event) {
     if (event->button() != Qt::LeftButton)
         return;
 
-    backupImage = image.copy();
-    switch (tool) {
+    _backupImage = _image.copy();
+    switch (_tool) {
         case line:
-            shapes.append(new Line(event->pos(), penColor, penWidth));
-            currentShape = shapes.last();
+            _shapes.append(new Line(event->pos(), _penColor, _penWidth));
+            _currentShape = _shapes.last();
             break;
         case circle:
-            shapes.append(new Circle(event->pos(), penColor, penWidth));
-            currentShape = shapes.last();
+            _shapes.append(new Circle(event->pos(), _penColor, _penWidth));
+            _currentShape = _shapes.last();
             break;
         case rectangle:
-            shapes.append(new Rectangle(event->pos(), penColor, penWidth));
-            currentShape = shapes.last();
+            _shapes.append(new Rectangle(event->pos(), _penColor, _penWidth));
+            _currentShape = _shapes.last();
             break;
         case polygon: {
             auto closestShape = snapClosestShape(event->pos());
             auto *polygon = dynamic_cast<Polygon *>(closestShape);
             if (polygon != nullptr && !polygon->isClosed() && polygon->isEnd()) {
                 polygon->addPoint(event->pos());
-                currentShape = closestShape;
-                image.fill(qRgb(255, 255, 255));
+                _currentShape = closestShape;
+                _image.fill(qRgb(255, 255, 255));
                 update();
-                backupImage = image.copy();
+                _backupImage = _image.copy();
                 break;
             }
 
-            shapes.append(new Polygon(event->pos(), penColor, penWidth));
-            currentShape = shapes.last();
+            _shapes.append(new Polygon(event->pos(), _penColor, _penWidth));
+            _currentShape = _shapes.last();
             break;
         }
         case mov:
@@ -125,13 +125,13 @@ void DrawingArea::mousePressEvent(QMouseEvent *event) {
             if (!closestShape)
                 return;
 
-            currentShape = closestShape;
-            image.fill(qRgb(255, 255, 255));
+            _currentShape = closestShape;
+            _image.fill(qRgb(255, 255, 255));
             update();
-            backupImage = image.copy();
+            _backupImage = _image.copy();
 
-            if (tool == format)
-                currentShape->format(penColor, penWidth);
+            if (_tool == format)
+                _currentShape->format(_penColor, _penWidth);
             break;
         }
         case clip: {
@@ -139,26 +139,26 @@ void DrawingArea::mousePressEvent(QMouseEvent *event) {
             if (!closestShape)
                 return;
 
-            if (clippedShape == nullptr) {
-                clippedShape = closestShape;
+            if (_clippedShape == nullptr) {
+                _clippedShape = closestShape;
             } else {
                 auto *rectangle = dynamic_cast<Rectangle *>(closestShape);
-                if (rectangle != nullptr && clippedShape != rectangle) {
-                    auto newShapes = clippedShape->LiangBarskyClip(rectangle);
+                if (rectangle != nullptr && _clippedShape != rectangle) {
+                    auto newShapes = _clippedShape->LiangBarskyClip(rectangle);
                     for (auto &shape: newShapes)
-                        shapes.append(shape);
+                        _shapes.append(shape);
                 }
 
-                clippedShape = nullptr;
+                _clippedShape = nullptr;
             }
         }
     }
 
-    if (tool == rem)
-        shapes.removeOne(currentShape);
+    if (_tool == rem)
+        _shapes.removeOne(_currentShape);
 
-    if (tool != clip)
-        clippedShape = nullptr;
+    if (_tool != clip)
+        _clippedShape = nullptr;
 
     update();
 }
@@ -167,28 +167,28 @@ void DrawingArea::mouseMoveEvent(QMouseEvent *event) {
     if (!(event->buttons() & Qt::LeftButton))
         return;
 
-    switch (tool) {
+    switch (_tool) {
         case line:
         case circle:
         case rectangle:
-            currentShape->resize(event->pos());
+            _currentShape->resize(event->pos());
             break;
 
         case polygon: {
-            auto polygon = dynamic_cast<Polygon *>(currentShape);
+            auto polygon = dynamic_cast<Polygon *>(_currentShape);
             if (polygon != nullptr && !polygon->isClosed())
                 polygon->resize(event->pos());
             break;
         }
         case mov:
-            if (!currentShape)
+            if (!_currentShape)
                 return;
-            currentShape->move(event->pos());
+            _currentShape->move(event->pos());
             break;
         case res:
-            if (!currentShape)
+            if (!_currentShape)
                 return;
-            currentShape->resize(event->pos());
+            _currentShape->resize(event->pos());
             break;
         case rem:
         case format:
@@ -196,7 +196,7 @@ void DrawingArea::mouseMoveEvent(QMouseEvent *event) {
             return;
     }
 
-    image = backupImage.copy();
+    _image = _backupImage.copy();
     update();
 }
 
@@ -204,32 +204,32 @@ void DrawingArea::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() != Qt::LeftButton)
         return;
 
-    if (tool == polygon) {
-        auto polygon = dynamic_cast<Polygon *>(currentShape);
+    if (_tool == polygon) {
+        auto polygon = dynamic_cast<Polygon *>(_currentShape);
         if (polygon != nullptr)
             polygon->close();
     }
 
-    currentShape = nullptr;
+    _currentShape = nullptr;
     update();
 }
 
 void DrawingArea::paintEvent(QPaintEvent *event) {
-    QPainter painter(&image);
-    painter.setPen(QPen(penColor, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-    for (auto &shape: shapes) {
-        shape->draw(painter, antyaliasing);
+    QPainter painter(&_image);
+    painter.setPen(QPen(_penColor, _penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    for (auto &shape: _shapes) {
+        shape->draw(painter, _antyaliasing);
     }
 
     QPainter areaPainter(this);
     QRect dirtyRect = event->rect();
-    areaPainter.drawImage(dirtyRect, image, dirtyRect);
+    areaPainter.drawImage(dirtyRect, _image, dirtyRect);
 }
 
 Shape *DrawingArea::snapClosestShape(const QPoint &point) const {
     int minDistance = 1000000;
     Shape *closestShape = nullptr;
-    for (auto shape: shapes) {
+    for (auto shape: _shapes) {
         auto distance = shape->snap(point);
         if (distance < minDistance) {
             minDistance = distance;

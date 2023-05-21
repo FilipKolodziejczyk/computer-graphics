@@ -30,17 +30,29 @@ public:
 
     bool save(const QString &fileName);
 
-    void setPenColor(const QColor &newColor) { penColor = newColor; }
+    void setPenColor(const QColor &newColor) { _penColor = newColor; }
 
-    void setPenWidth(int newWidth) { penWidth = newWidth; }
+    void setPenWidth(int newWidth) { _penWidth = newWidth; }
 
-    [[nodiscard]] QColor getPenColor() const { return penColor; }
+    void setFillingColor(const QColor &newColor) { _fillingColor = newColor; }
 
-    [[nodiscard]] int getPenWidth() const { return penWidth; }
+    void setFillingImage(const QImage &newImage) { _fillingImage = newImage; }
 
-    [[nodiscard]] Tools getTool() const { return tool; }
+    void toggleFilling() { _fillingWithImage = !_fillingWithImage; }
 
-    [[nodiscard]] bool getAntyaliasing() const { return antyaliasing; }
+    [[nodiscard]] QColor getPenColor() const { return _penColor; }
+
+    [[nodiscard]] int getPenWidth() const { return _penWidth; }
+
+    [[nodiscard]] QColor getFillingColor() const { return _fillingColor; }
+
+    [[nodiscard]] QImage getFillingImage() const { return _fillingImage; }
+
+    [[nodiscard]] bool getIfFillingWithImage() const { return _fillingWithImage; }
+
+    [[nodiscard]] Tools getTool() const { return _tool; }
+
+    [[nodiscard]] bool getAntyaliasing() const { return _antyaliasing; }
 
 public slots:
 
@@ -62,15 +74,18 @@ private:
 
     [[nodiscard]] Shape *snapClosestShape(const QPoint &point) const;
 
-    QImage image;
-    QImage backupImage;
-    QList<Shape *> shapes;
-    Shape *currentShape{};
-    QColor penColor;
-    int penWidth;
-    Tools tool;
-    bool antyaliasing;
-    Shape *clippedShape{};
+    QImage _image;
+    QImage _backupImage;
+    QList<Shape *> _shapes;
+    Shape *_currentShape{};
+    QColor _penColor;
+    int _penWidth;
+    QColor _fillingColor;
+    QImage _fillingImage;
+    bool _fillingWithImage{};
+    Tools _tool;
+    bool _antyaliasing;
+    Shape *_clippedShape{};
 };
 
 #endif // DRAWINGAREA_H
