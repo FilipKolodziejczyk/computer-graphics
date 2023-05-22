@@ -129,9 +129,9 @@ void Polygon::resize(QPoint newEnd) {
 QList<Shape *> Polygon::LiangBarskyClip(const Rectangle *clipper) const {
     QList<Shape *> clippedShapes;
 
-    for (int i = 0; i < _points.size() - 1; i++) {
+    for (int i = 0; i < _points.size(); i++) {
         Line line(_points[i], _color, _width);
-        line.resize(_points[i + 1]);
+        line.resize(_points[(i + 1) % _points.size()]);
         QList<Shape *> clippedLine = line.LiangBarskyClip(clipper);
         for (auto &shape: clippedLine)
             clippedShapes.append(shape);
