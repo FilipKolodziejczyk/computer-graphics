@@ -33,17 +33,79 @@ void Polygon::draw(QPainter &painter, bool antyaliasing) {
         line.resize(_points[i + 1]);
         line.draw(painter, antyaliasing);
     }
+
+    if (_closed) {
+        Line line(_points[0], _color, _width);
+        line.resize(_points[_points.size() - 1]);
+        line.draw(painter, antyaliasing);
+    }
 }
 
 void Polygon::fill(QPainter &painter) const {
-    if (!isClosed())
+    struct AETNode {
+        int yMax;
+        double xIntersect;
+        double slope;
+
+        AETNode(QPoint p1, QPoint p2) {
+            yMax = p2.y();
+            xIntersect = p1.x();
+            slope = (p1.x() - p2.x()) * 1.0 / (p1.y() - p2.y());
+        }
+    };
+
+    if (!isClosed() || _fillingColor == Qt::white)
         return;
 
+    QList<int> indices;
+    indices.resize(_points.size());
+    std::iota(std::begin(indices), std::end(indices), 0);
+    std::sort(std::begin(indices), std::end(indices), [&](int i1, int i2) {
+        return _points[i1].y() < _points[i2].y();
+    });
+
+    QList<AETNode> AET;
+    int size = AET.size();
     if (_fillingWithImage) {
 
     } else {
-        painter.setPen(QPen(_color, 1));
+        painter.setPen(QPen(_fillingColor, 1));
 
+        int yMax = _points[indices.back()].y();
+        int n = _points.size();
+        auto it = indices.begin();
+        int currentY = _points[indices.front()].y();
+
+        while (currentY < yMax) {
+            if (AET.size() != size)
+                size = AET.size();
+
+            while (it != indices.end() && _points[*it].y() == currentY) {
+                if (_points[(*it + n - 1) % n].y() > _points[*it].y())
+                    AET.append(AETNode(_points[*it], _points[(*it + n - 1) % n]));
+
+                if (_points[(*it + 1) % n].y() > _points[*it].y())
+                    AET.append(AETNode(_points[*it], _points[(*it + 1) % n]));
+
+                it++;
+            }
+
+            std::sort(AET.begin(), AET.end(), [](AETNode n1, AETNode n2) {
+                return n1.xIntersect < n2.xIntersect;
+            });
+
+            for (int i = 0; i < AET.size() - 1; i += 2)
+                for (int x = qRound(AET[i].xIntersect) + 1; x < qRound(AET[i + 1].xIntersect); x++)
+                    painter.drawPoint(x, currentY);
+
+            ++currentY;
+            erase_if(AET, [&](AETNode node) {
+                return node.yMax == currentY;
+            });
+
+            for (auto &node: AET)
+                node.xIntersect += node.slope;
+        }
     }
 }
 
@@ -58,7 +120,7 @@ void Polygon::move(QPoint newEnd) {
 
 void Polygon::resize(QPoint newEnd) {
     _points[_snapped] = newEnd;
-    if (_closed && (_snapped == 0 || _snapped == _points.size() - 1))
+    if (_closed && _snapped == 0)
         _points[0] = _points[_points.size() - 1] = newEnd;
     else if (_points.length() > 2 && getDistance(_points[0], _points[_points.size() - 1]) < 25)
         _points.last() = QPoint(_points[0]);
@@ -88,8 +150,13 @@ void Polygon::addPoint(QPoint point) {
 }
 
 void Polygon::close() {
-    if (_points.length() > 2 && _points.first() == _points.last())
+    if (_closed)
+        return;
+
+    if (_points.length() > 2 && _points.first() == _points.last()) {
         _closed = true;
+        _points.removeLast();
+    }
 }
 
 void Polygon::serialise(QXmlStreamWriter &writer) {
@@ -101,6 +168,7 @@ void Polygon::serialise(QXmlStreamWriter &writer) {
     writer.writeAttribute("_color", QString::number(_color.red()) + "," + QString::number(_color.green()) + "," +
                                     QString::number(_color.blue()));
     writer.writeAttribute("_width", QString::number(_width));
+    writer.writeAttribute("_closed", QString::number(_closed));
 
     writer.writeAttribute("_fillingColor",
                           QString::number(_fillingColor.red()) + "," + QString::number(_fillingColor.green()) + "," +
@@ -141,8 +209,8 @@ Polygon *Polygon::deserialise(QXmlStreamReader &reader) {
     }
     if (attributes.hasAttribute("_width"))
         width = attributes.value("_width").toInt();
-    if (points[0] == points[points.size() - 1])
-        closed = true;
+    if (attributes.hasAttribute("_closed"))
+        closed = attributes.value("_closed").toInt();
     if (attributes.hasAttribute("_fillingColor")) {
         QStringList colorList = attributes.value("_fillingColor").toString().split(",");
         fillingColor.setRgb(colorList[0].toInt(), colorList[1].toInt(), colorList[2].toInt());
