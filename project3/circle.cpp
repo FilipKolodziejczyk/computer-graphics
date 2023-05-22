@@ -66,7 +66,8 @@ void Circle::serialise(QXmlStreamWriter &writer) {
     writer.writeStartElement("circle");
     writer.writeAttribute("_center", QString::number(_center.x()) + "," + QString::number(_center.y()));
     writer.writeAttribute("_radius", QString::number(_radius));
-    writer.writeAttribute("_color", _color.name());
+    writer.writeAttribute("_color", QString::number(_color.red()) + "," + QString::number(_color.green()) + "," +
+                                    QString::number(_color.blue()));
     writer.writeAttribute("_width", QString::number(_width));
     writer.writeEndElement();
 }
@@ -74,7 +75,7 @@ void Circle::serialise(QXmlStreamWriter &writer) {
 Circle *Circle::deserialise(QXmlStreamReader &reader) {
     QPoint center;
     int radius = 0;
-    QColor color;
+    QColor color = Qt::black;
     int width = 0;
 
     QXmlStreamAttributes attributes = reader.attributes();
@@ -87,8 +88,10 @@ Circle *Circle::deserialise(QXmlStreamReader &reader) {
     if (attributes.hasAttribute("_radius")) {
         radius = attributes.value("_radius").toInt();
     }
-    if (attributes.hasAttribute("_color"))
-        color = QColor(attributes.value("_color").toString());
+    if (attributes.hasAttribute("_color")) {
+        QStringList colorList = attributes.value("_color").toString().split(",");
+        color.setRgb(colorList[0].toInt(), colorList[1].toInt(), colorList[2].toInt());
+    }
     if (attributes.hasAttribute("_width"))
         width = attributes.value("_width").toInt();
 

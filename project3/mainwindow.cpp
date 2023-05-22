@@ -69,8 +69,8 @@ void MainWindow::fillingImage() {
     }
 }
 
-void MainWindow::toggleFilling() {
-    _drawingArea->toggleFilling();
+void MainWindow::toggleFillingType() {
+    _drawingArea->toggleFillingType();
 }
 
 void MainWindow::createActions(Tools initTool) {
@@ -105,11 +105,11 @@ void MainWindow::createActions(Tools initTool) {
     _fillingImageAction->setStatusTip(tr("Change the filling _image"));
     connect(_fillingImageAction, &QAction::triggered, this, &MainWindow::fillingImage);
 
-    _toggleFillingAction = new QAction(tr("&Filling with image"), this);
-    _toggleFillingAction->setStatusTip(tr("Toggle type of filling"));
-    _toggleFillingAction->setCheckable(true);
-    _toggleFillingAction->setChecked(_drawingArea->getIfFillingWithImage());
-    connect(_toggleFillingAction, &QAction::triggered, this, &MainWindow::toggleFilling);
+    _toggleFillingTypeAction = new QAction(tr("&Filling with image"), this);
+    _toggleFillingTypeAction->setStatusTip(tr("Toggle type of filling"));
+    _toggleFillingTypeAction->setCheckable(true);
+    _toggleFillingTypeAction->setChecked(_drawingArea->getIfFillingWithImage());
+    connect(_toggleFillingTypeAction, &QAction::triggered, this, &MainWindow::toggleFillingType);
 
     _toolsGroup = new QActionGroup(this);
     _toolsGroup->setExclusive(true);
@@ -145,7 +145,7 @@ void MainWindow::createMenus() {
     _toolsMenu->addSeparator();
     _toolsMenu->addAction(_fillingColorAction);
     _toolsMenu->addAction(_fillingImageAction);
-    _toolsMenu->addAction(_toggleFillingAction);
+    _toolsMenu->addAction(_toggleFillingTypeAction);
     _toolsMenu->addSeparator();
     _toolsMenu->addActions(_toolsActions);
     _toolsMenu->addSeparator();

@@ -53,7 +53,7 @@ void Line::serialise(QXmlStreamWriter &writer) {
 Line *Line::deserialise(QXmlStreamReader &reader) {
     QPoint start;
     QPoint end;
-    QColor color;
+    QColor color = Qt::black;
     int width = 0;
 
     QXmlStreamAttributes attributes = reader.attributes();
@@ -69,9 +69,7 @@ Line *Line::deserialise(QXmlStreamReader &reader) {
     }
     if (attributes.hasAttribute("_color")) {
         QStringList colorList = attributes.value("_color").toString().split(",");
-        color.setRed(colorList[0].toInt());
-        color.setGreen(colorList[1].toInt());
-        color.setBlue(colorList[2].toInt());
+        color.setRgb(colorList[0].toInt(), colorList[1].toInt(), colorList[2].toInt());
     }
     if (attributes.hasAttribute("_width")) {
         width = attributes.value("_width").toInt();

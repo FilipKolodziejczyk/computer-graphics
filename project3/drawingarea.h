@@ -7,7 +7,7 @@
 #include <QImage>
 
 enum Tools {
-    line, circle, rectangle, polygon, mov, res, rem, format, clip
+    line, circle, rectangle, polygon, mov, res, rem, format, clip, fill
 };
 
 constexpr std::initializer_list<std::pair<Tools, const char *>> tools = {{line,      "Line"},
@@ -18,7 +18,8 @@ constexpr std::initializer_list<std::pair<Tools, const char *>> tools = {{line, 
                                                                          {res,       "Resize"},
                                                                          {rem,       "Remove"},
                                                                          {format,    "Format"},
-                                                                         {clip,      "Clip"}};
+                                                                         {clip,      "Clip"},
+                                                                         {fill,      "Fill"}};
 
 class DrawingArea : public QWidget {
 Q_OBJECT
@@ -37,8 +38,6 @@ public:
     void setFillingColor(const QColor &newColor) { _fillingColor = newColor; }
 
     void setFillingImage(const QImage &newImage) { _fillingImage = newImage; }
-
-    void toggleFilling() { _fillingWithImage = !_fillingWithImage; }
 
     [[nodiscard]] QColor getPenColor() const { return _penColor; }
 
@@ -61,6 +60,8 @@ public slots:
     void setTool();
 
     void toggleAntialysing();
+
+    void toggleFillingType() { _fillingWithImage = !_fillingWithImage; }
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -86,6 +87,7 @@ private:
     Tools _tool;
     bool _antyaliasing;
     Shape *_clippedShape{};
+    bool _editing = false;
 };
 
 #endif // DRAWINGAREA_H

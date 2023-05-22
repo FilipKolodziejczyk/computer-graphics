@@ -87,6 +87,8 @@ void DrawingArea::mousePressEvent(QMouseEvent *event) {
     if (event->button() != Qt::LeftButton)
         return;
 
+    _editing = true;
+
     _backupImage = _image.copy();
     switch (_tool) {
         case line:
@@ -120,6 +122,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event) {
         case mov:
         case res:
         case rem:
+        case fill:
         case format: {
             auto closestShape = snapClosestShape(event->pos());
             if (!closestShape)
@@ -130,8 +133,6 @@ void DrawingArea::mousePressEvent(QMouseEvent *event) {
             update();
             _backupImage = _image.copy();
 
-            if (_tool == format)
-                _currentShape->format(_penColor, _penWidth);
             break;
         }
         case clip: {
@@ -152,6 +153,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event) {
                 _clippedShape = nullptr;
             }
         }
+
     }
 
     if (_tool == rem)
@@ -159,6 +161,20 @@ void DrawingArea::mousePressEvent(QMouseEvent *event) {
 
     if (_tool != clip)
         _clippedShape = nullptr;
+
+    if (_tool == format)
+        _currentShape->format(_penColor, _penWidth);
+
+    if (_tool == fill) {
+        auto *filledShape = dynamic_cast<FilledShape *>(_currentShape);
+        if (filledShape != nullptr && (typeid(*filledShape) != typeid(Polygon) || dynamic_cast<Polygon *>(filledShape)->isClosed())) {
+            if (_fillingWithImage) {
+                filledShape->setFillingImage(_fillingImage);
+            } else {
+                filledShape->setFillingColor(_fillingColor);
+            }
+        }
+    }
 
     update();
 }
@@ -193,6 +209,7 @@ void DrawingArea::mouseMoveEvent(QMouseEvent *event) {
         case rem:
         case format:
         case clip:
+        case fill:
             return;
     }
 
@@ -203,6 +220,8 @@ void DrawingArea::mouseMoveEvent(QMouseEvent *event) {
 void DrawingArea::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() != Qt::LeftButton)
         return;
+
+    _editing = false;
 
     if (_tool == polygon) {
         auto polygon = dynamic_cast<Polygon *>(_currentShape);
@@ -217,9 +236,15 @@ void DrawingArea::mouseReleaseEvent(QMouseEvent *event) {
 void DrawingArea::paintEvent(QPaintEvent *event) {
     QPainter painter(&_image);
     painter.setPen(QPen(_penColor, _penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+
     for (auto &shape: _shapes) {
-        shape->draw(painter, _antyaliasing);
+        FilledShape *filledShape = dynamic_cast<FilledShape *>(shape);
+        if (!_editing && filledShape != nullptr)
+            filledShape->fill(painter);
     }
+
+    for (auto &shape: _shapes)
+        shape->draw(painter, _antyaliasing);
 
     QPainter areaPainter(this);
     QRect dirtyRect = event->rect();

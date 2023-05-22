@@ -28,7 +28,7 @@ private slots:
 
     void fillingImage();
 
-    void toggleFilling();
+    void toggleFillingType();
 
 private:
     void createActions(Tools initTool);
@@ -47,7 +47,7 @@ private:
     QAction *_penWidthAction{};
     QAction *_fillingColorAction{};
     QAction *_fillingImageAction{};
-    QAction *_toggleFillingAction{};
+    QAction *_toggleFillingTypeAction{};
     QActionGroup *_toolsGroup{};
     QList<QAction *> _toolsActions;
     QAction *_antyaliasingAction{};

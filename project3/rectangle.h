@@ -2,15 +2,18 @@
 #define RECTANGLE_H
 
 #include "shape.h"
+#include "filledShape.h"
 #include "line.h"
 
-class Rectangle : public Shape {
+class Rectangle : public FilledShape {
 public:
     Rectangle(QPoint start, QColor color, int width);
 
     int snap(const QPoint &point) override;
 
     void draw(QPainter &painter, bool antyaliasing) override;
+
+    void fill(QPainter &painter) const override;
 
     void move(QPoint newEnd) override;
 

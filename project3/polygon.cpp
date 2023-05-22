@@ -1,8 +1,9 @@
+#include <QBuffer>
 #include "shape.h"
 #include "polygon.h"
 #include "line.h"
 
-Polygon::Polygon(QPoint start, QColor color, int width) : Shape(color, width), _closed(false) {
+Polygon::Polygon(QPoint start, QColor color, int width) : FilledShape(color, width), _closed(false) {
     _points.append(start);
     _points.append(start);
 }
@@ -31,6 +32,18 @@ void Polygon::draw(QPainter &painter, bool antyaliasing) {
         Line line(_points[i], _color, _width);
         line.resize(_points[i + 1]);
         line.draw(painter, antyaliasing);
+    }
+}
+
+void Polygon::fill(QPainter &painter) const {
+    if (!isClosed())
+        return;
+
+    if (_fillingWithImage) {
+
+    } else {
+        painter.setPen(QPen(_color, 1));
+
     }
 }
 
@@ -88,14 +101,30 @@ void Polygon::serialise(QXmlStreamWriter &writer) {
     writer.writeAttribute("_color", QString::number(_color.red()) + "," + QString::number(_color.green()) + "," +
                                     QString::number(_color.blue()));
     writer.writeAttribute("_width", QString::number(_width));
+
+    writer.writeAttribute("_fillingColor",
+                          QString::number(_fillingColor.red()) + "," + QString::number(_fillingColor.green()) + "," +
+                          QString::number(_fillingColor.blue()));
+    writer.writeAttribute("_fillingWithImage", QString::number(_fillingWithImage));
+
+    QByteArray byteArray;
+    QBuffer buffer(&byteArray);
+    buffer.open(QIODevice::WriteOnly);
+    _fillingImage.save(&buffer, "PNG");
+    QString fillingImageString = QString::fromLatin1(byteArray.toBase64().data());
+    writer.writeAttribute("_fillingImage", fillingImageString);
+
     writer.writeEndElement();
 }
 
 Polygon *Polygon::deserialise(QXmlStreamReader &reader) {
     QList<QPoint> points;
-    QColor color;
+    QColor color = Qt::black;
     int width = 0;
     bool closed = false;
+    QColor fillingColor = Qt::white;
+    bool fillingWithImage = false;
+    QImage fillingImage = QImage();
 
     QXmlStreamAttributes attributes = reader.attributes();
     if (attributes.hasAttribute("_points")) {
@@ -107,16 +136,31 @@ Polygon *Polygon::deserialise(QXmlStreamReader &reader) {
         }
     }
     if (attributes.hasAttribute("_color")) {
-        QStringList colorString = attributes.value("_color").toString().split(",");
-        color = QColor(colorString[0].toInt(), colorString[1].toInt(), colorString[2].toInt());
+        QStringList colorList = attributes.value("_color").toString().split(",");
+        color.setRgb(colorList[0].toInt(), colorList[1].toInt(), colorList[2].toInt());
     }
     if (attributes.hasAttribute("_width"))
         width = attributes.value("_width").toInt();
     if (points[0] == points[points.size() - 1])
         closed = true;
+    if (attributes.hasAttribute("_fillingColor")) {
+        QStringList colorList = attributes.value("_fillingColor").toString().split(",");
+        fillingColor.setRgb(colorList[0].toInt(), colorList[1].toInt(), colorList[2].toInt());
+    }
+    if (attributes.hasAttribute("_fillingWithImage"))
+        fillingWithImage = attributes.value("_fillingWithImage").toInt();
+    if (attributes.hasAttribute("_fillingImage")) {
+        QImage fillingImage;
+        QByteArray byteArray = QByteArray::fromBase64(attributes.value("_fillingImage").toString().toLatin1());
+        fillingImage.loadFromData(byteArray, "PNG");
+    }
 
     auto *polygon = new Polygon(points[0], color, width);
     polygon->_points = points;
     polygon->_closed = closed;
+    polygon->_fillingColor = fillingColor;
+    polygon->_fillingWithImage = fillingWithImage;
+    polygon->_fillingImage = fillingImage;
+
     return polygon;
 }

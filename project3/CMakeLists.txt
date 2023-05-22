@@ -34,6 +34,8 @@ set(PROJECT_SOURCES
 
         rectangle.h
         rectangle.cpp
+
+        filledShape.h
         )
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)
