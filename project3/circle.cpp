@@ -16,7 +16,10 @@ void Circle::draw(QPainter &painter, bool antyaliasing) {
     int d = 1 - _radius;
     int x = 0;
     int y = _radius;
-    painter.drawPoint(_center.x() + x, _center.y() + y);
+    painter.drawPoint(_center.x() , _center.y() + y);
+    painter.drawPoint(_center.x(), _center.y() - y);
+    painter.drawPoint(_center.x() + y, _center.y());
+    painter.drawPoint(_center.x() + y, _center.y());
 
     while (y > x) {
         if (d < 0) {
