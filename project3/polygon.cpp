@@ -54,7 +54,7 @@ void Polygon::fill(QPainter &painter) const {
         }
     };
 
-    if (!isClosed() || _fillingColor == Qt::white)
+    if (!isClosed() ||(!_fillingWithImage && _fillingColor == Qt::white))
         return;
 
     QList<int> indices;
@@ -64,48 +64,54 @@ void Polygon::fill(QPainter &painter) const {
         return _points[i1].y() < _points[i2].y();
     });
 
+    int yMin = _points[indices.front()].y();
+    int yMax = _points[indices.back()].y();
+    int n = _points.size();
+    auto it = indices.begin();
+    int currentY = yMin;
+
     QList<AETNode> AET;
-    int size = AET.size();
-    if (_fillingWithImage) {
+    painter.setPen(QPen(_fillingColor, 1));
 
-    } else {
-        painter.setPen(QPen(_fillingColor, 1));
+    int xMin = std::min_element(_points.begin(), _points.end(), [](QPoint p1, QPoint p2) {
+        return p1.x() < p2.x();
+    })->x();
+    int xMax = std::max_element(_points.begin(), _points.end(), [](QPoint p1, QPoint p2) {
+        return p1.x() < p2.x();
+    })->x();
+    QImage image = _fillingImage.scaled(xMax - xMin, yMax - currentY);
 
-        int yMax = _points[indices.back()].y();
-        int n = _points.size();
-        auto it = indices.begin();
-        int currentY = _points[indices.front()].y();
+    while (currentY < yMax) {
+        while (it != indices.end() && _points[*it].y() == currentY) {
+            if (_points[(*it + n - 1) % n].y() > _points[*it].y())
+                AET.append(AETNode(_points[*it], _points[(*it + n - 1) % n]));
 
-        while (currentY < yMax) {
-            if (AET.size() != size)
-                size = AET.size();
+            if (_points[(*it + 1) % n].y() > _points[*it].y())
+                AET.append(AETNode(_points[*it], _points[(*it + 1) % n]));
 
-            while (it != indices.end() && _points[*it].y() == currentY) {
-                if (_points[(*it + n - 1) % n].y() > _points[*it].y())
-                    AET.append(AETNode(_points[*it], _points[(*it + n - 1) % n]));
-
-                if (_points[(*it + 1) % n].y() > _points[*it].y())
-                    AET.append(AETNode(_points[*it], _points[(*it + 1) % n]));
-
-                it++;
-            }
-
-            std::sort(AET.begin(), AET.end(), [](AETNode n1, AETNode n2) {
-                return n1.xIntersect < n2.xIntersect;
-            });
-
-            for (int i = 0; i < AET.size() - 1; i += 2)
-                for (int x = qRound(AET[i].xIntersect) + 1; x < qRound(AET[i + 1].xIntersect); x++)
-                    painter.drawPoint(x, currentY);
-
-            ++currentY;
-            erase_if(AET, [&](AETNode node) {
-                return node.yMax == currentY;
-            });
-
-            for (auto &node: AET)
-                node.xIntersect += node.slope;
+            it++;
         }
+
+        std::sort(AET.begin(), AET.end(), [](AETNode n1, AETNode n2) {
+            return n1.xIntersect < n2.xIntersect;
+        });
+
+        for (int i = 0; i < AET.size() - 1; i += 2) {
+            for (int x = qRound(AET[i].xIntersect) + 1; x < qRound(AET[i + 1].xIntersect); x++) {
+                if (_fillingWithImage)
+                    painter.setPen(QPen(image.pixelColor(x - xMin, currentY - yMin), 1));
+
+                painter.drawPoint(x, currentY);
+            }
+        }
+
+        ++currentY;
+        erase_if(AET, [&](AETNode node) {
+            return node.yMax == currentY;
+        });
+
+        for (auto &node: AET)
+            node.xIntersect += node.slope;
     }
 }
 
@@ -218,7 +224,6 @@ Polygon *Polygon::deserialise(QXmlStreamReader &reader) {
     if (attributes.hasAttribute("_fillingWithImage"))
         fillingWithImage = attributes.value("_fillingWithImage").toInt();
     if (attributes.hasAttribute("_fillingImage")) {
-        QImage fillingImage;
         QByteArray byteArray = QByteArray::fromBase64(attributes.value("_fillingImage").toString().toLatin1());
         fillingImage.loadFromData(byteArray, "PNG");
     }

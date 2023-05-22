@@ -29,14 +29,16 @@ void Rectangle::draw(QPainter &painter, bool antyaliasing) {
 }
 
 void Rectangle::fill(QPainter &painter) const {
-    if (_fillingWithImage) {
+    QImage image = _fillingImage.scaled(right() - left(), bottom() - top());
+    painter.setPen(QPen(_fillingColor, 1));
 
-    } else {
-        painter.setPen(QPen(_fillingColor, 1));
+    for (int x = left() + _width; x <= right() - _width; x++) {
+        for (int y = top() + _width; y <= bottom() - _width; y++) {
+            if (_fillingWithImage)
+                painter.setPen(QPen(image.pixelColor(x - left(), y - top()), 1));
 
-        for (int x = left() + _width; x <= right() - _width; x++)
-            for (int y = top() + _width; y <= bottom() - _width; y++)
-                painter.drawPoint(x, y);
+            painter.drawPoint(x, y);
+        }
     }
 }
 
@@ -128,7 +130,6 @@ Rectangle *Rectangle::deserialise(QXmlStreamReader &reader) {
     if (attributes.hasAttribute("_fillingWithImage"))
         fillingWithImage = attributes.value("_fillingWithImage").toInt();
     if (attributes.hasAttribute("_fillingImage")) {
-        QImage fillingImage;
         QByteArray byteArray = QByteArray::fromBase64(attributes.value("_fillingImage").toString().toLatin1());
         fillingImage.loadFromData(byteArray, "PNG");
     }
