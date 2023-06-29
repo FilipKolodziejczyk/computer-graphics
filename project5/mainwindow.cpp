@@ -5,7 +5,6 @@
 #include <QActionGroup>
 #include <QMenu>
 #include <QMenuBar>
-#include <QColorDialog>
 #include <QInputDialog>
 #include <QTimer>
 

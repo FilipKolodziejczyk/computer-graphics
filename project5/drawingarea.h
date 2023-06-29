@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QImage>
 
+#include "cylinder.h"
+
 class DrawingArea : public QWidget {
 Q_OBJECT
 
@@ -22,12 +24,16 @@ protected:
 
     void mouseReleaseEvent(QMouseEvent *event) override;
 
+    void mouseScrollEvent(QWheelEvent *event);
+
 private:
     void paintEvent(QPaintEvent *event) override;
 
     QImage _image;
     QImage _backupImage;
     QImage _texture;
+    Cylinder _cylinder;
+
     bool _textureOn;
 };
 

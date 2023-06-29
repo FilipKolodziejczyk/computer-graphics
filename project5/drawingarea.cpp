@@ -3,12 +3,13 @@
 #include <QPainter>
 #include <QMouseEvent>
 
-DrawingArea::DrawingArea(QWidget *parent) : QWidget(parent) {
+DrawingArea::DrawingArea(QWidget *parent) : QWidget(parent), _cylinder(5, 10, 8) {
     setAttribute(Qt::WA_StaticContents);
     resize(1000, 1000);
     QImage initImage(size(), QImage::Format_ARGB32);
     initImage.fill(qRgb(255, 255, 255));
     _image = initImage;
+    _textureOn = false;
 }
 
 void DrawingArea::paintEvent(QPaintEvent *event) {
@@ -32,6 +33,14 @@ void DrawingArea::mouseMoveEvent(QMouseEvent *event) {
 void DrawingArea::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() != Qt::LeftButton)
         return;
+}
+
+void DrawingArea::mouseScrollEvent(QWheelEvent *event) {
+    if (event->angleDelta().y() > 0) {}
+        // _cylinder.zoomIn();
+    else {}
+        // _cylinder.zoomOut();
+    update();
 }
 
 void DrawingArea::loadTexture(const QString &fileName) {
