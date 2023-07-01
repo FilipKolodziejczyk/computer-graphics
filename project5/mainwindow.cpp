@@ -5,8 +5,6 @@
 #include <QActionGroup>
 #include <QMenu>
 #include <QMenuBar>
-#include <QInputDialog>
-#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     _drawingArea = new DrawingArea;

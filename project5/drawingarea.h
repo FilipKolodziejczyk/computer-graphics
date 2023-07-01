@@ -32,7 +32,6 @@ private:
     QImage _image;
     QImage _backupImage;
     QImage _texture;
-    Cylinder _cylinder;
 
     bool _textureOn;
 };

@@ -3,7 +3,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 
-DrawingArea::DrawingArea(QWidget *parent) : QWidget(parent), _cylinder(5, 10, 8) {
+DrawingArea::DrawingArea(QWidget *parent) : QWidget(parent) {
     setAttribute(Qt::WA_StaticContents);
     resize(1000, 1000);
     QImage initImage(size(), QImage::Format_ARGB32);
@@ -15,6 +15,8 @@ DrawingArea::DrawingArea(QWidget *parent) : QWidget(parent), _cylinder(5, 10, 8)
 void DrawingArea::paintEvent(QPaintEvent *event) {
     QPainter painter(&_image);
     painter.setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    _cylinder.draw(painter);
+
     QPainter areaPainter(this);
     QRect dirtyRect = event->rect();
     areaPainter.drawImage(dirtyRect, _image, dirtyRect);
