@@ -13,7 +13,25 @@ find_package(Qt6 COMPONENTS
         Widgets
         REQUIRED)
 
-add_executable(project5 main.cpp mainwindow.cpp drawingarea.cpp cylinder.cpp cylinder.h)
+add_executable(project5
+        main.cpp
+        mainwindow.cpp
+        mainwindow.h
+        drawingarea.cpp
+        drawingarea.h
+        cylinder.cpp
+        cylinder.h
+        triangle.cpp
+        triangle.h
+        Math/Vector2.cpp
+        Math/Vector2.h
+        Math/Vector3.cpp
+        Math/Vector3.h
+        Math/Vector4.cpp
+        Math/Vector4.h
+        Math/Matrix.cpp
+        Math/Matrix.h)
+
 target_link_libraries(project5
         Qt::Core
         Qt::Gui

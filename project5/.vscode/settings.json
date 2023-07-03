@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.js": "javascriptreact",
+        "*.yaml": "azure-pipelines",
+        "*.yml": "azure-pipelines",
+        "string": "cpp"
+    }
+}
