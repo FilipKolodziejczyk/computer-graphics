@@ -43,6 +43,8 @@ public:
 
     Matrix &operator/=(double scalar);
 
+    Matrix dot(const Matrix &other) const;
+
     QList<double> operator[](int index) const;
 
     QList<double> &operator[](int index);
@@ -53,6 +55,5 @@ public:
 
     [[nodiscard]] Vector4 toVector4() const;
 };
-
 
 #endif //MATRIX_H

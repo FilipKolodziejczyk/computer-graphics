@@ -139,6 +139,19 @@ QList<double> &Matrix::operator[](int row) {
     return matrix[row];
 }
 
+Matrix Matrix::dot(const Matrix &other) const {
+    if (matrix[0].size() != other.matrix.size())
+        throw std::invalid_argument("Matrix dimensions must agree");
+
+    Matrix result(matrix.size(), other.matrix[0].size());
+    for (int i = 0; i < result.matrix.size(); i++)
+        for (int j = 0; j < result.matrix[0].size(); j++)
+            for (int k = 0; k < matrix[0].size(); k++)
+                result.matrix[i][j] += matrix[i][k] * other.matrix[k][j];
+
+    return result;
+}
+
 Vector2 Matrix::toVector2() const {
     if (matrix.size() != 2 || matrix[0].size() != 1)
         throw std::invalid_argument("Matrix must be 2x1");
