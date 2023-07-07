@@ -17,11 +17,11 @@ public:
 
     explicit Matrix(const QList<QList<double>> &matrix);
 
-    explicit Matrix(const Vector2 &vector) : matrix({{vector.x, vector.y}}) {}
+    explicit Matrix(const Vector2 &vector) : matrix({{vector.x}, {vector.y}}) {}
 
-    explicit Matrix(const Vector3 &vector) : matrix({{vector.x, vector.y, vector.z}}) {}
+    explicit Matrix(const Vector3 &vector) : matrix({{vector.x}, {vector.y}, {vector.z}}) {}
 
-    explicit Matrix(const Vector4 &vector) : matrix({{vector.x, vector.y, vector.z, vector.w}}) {}
+    explicit Matrix(const Vector4 &vector) : matrix({{vector.x}, {vector.y}, {vector.z}, {vector.w}}) {}
 
     Matrix operator+(const Matrix &other) const;
 

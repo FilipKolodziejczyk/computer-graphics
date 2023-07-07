@@ -19,10 +19,6 @@ add_executable(project5
         mainwindow.h
         drawingarea.cpp
         drawingarea.h
-        cylinder.cpp
-        cylinder.h
-        triangle.cpp
-        triangle.h
         Math/Vector2.cpp
         Math/Vector2.h
         Math/Vector3.cpp
@@ -30,7 +26,17 @@ add_executable(project5
         Math/Vector4.cpp
         Math/Vector4.h
         Math/Matrix.cpp
-        Math/Matrix.h)
+        Math/Matrix.h
+        Transformations/Transformation.h
+        Transformations/RotationMatrix.h
+        Transformations/TranslationMatrix.h
+        Models3D/Mesh.h
+        Models3D/Cylinder.cpp
+        Models3D/Cylinder.h
+        Transformations/ScaleMatrix.h
+        Models3D/Camera.h
+        Models3D/Camera.cpp
+        Models3D/Mesh.cpp Math/Vector.cpp Math/Vector.h)
 
 target_link_libraries(project5
         Qt::Core
