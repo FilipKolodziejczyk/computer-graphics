@@ -19,12 +19,6 @@ add_executable(project5
         mainwindow.h
         drawingarea.cpp
         drawingarea.h
-        Math/Vector2.cpp
-        Math/Vector2.h
-        Math/Vector3.cpp
-        Math/Vector3.h
-        Math/Vector4.cpp
-        Math/Vector4.h
         Math/Matrix.cpp
         Math/Matrix.h
         Transformations/Transformation.h
@@ -36,7 +30,9 @@ add_executable(project5
         Transformations/ScaleMatrix.h
         Models3D/Camera.h
         Models3D/Camera.cpp
-        Models3D/Mesh.cpp Math/Vector.cpp Math/Vector.h)
+        Models3D/Mesh.cpp
+        Math/Vector.cpp
+        Math/Vector.h)
 
 target_link_libraries(project5
         Qt::Core

@@ -16,7 +16,11 @@ public:
     void loadTexture(const QString &fileName);
 
 public slots:
-    void toggleTexture() { _textureOn = !_textureOn; update(); }
+
+    void toggleTexture() {
+        _textureOn = !_textureOn;
+        update();
+    }
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;

@@ -11,11 +11,10 @@ Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr);
 
-    void redraw() { _drawingArea->update();}
-
     ~MainWindow() override;
 
 private slots:
+
     void loadTexture();
 
 private:

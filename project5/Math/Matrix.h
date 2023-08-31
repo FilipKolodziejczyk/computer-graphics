@@ -3,9 +3,7 @@
 
 
 #include <QList>
-#include "Vector2.h"
-#include "Vector3.h"
-#include "Vector4.h"
+#include "Vector.h"
 
 class Matrix {
 public:
@@ -17,11 +15,7 @@ public:
 
     explicit Matrix(const QList<QList<double>> &matrix);
 
-    explicit Matrix(const Vector2 &vector) : matrix({{vector.x}, {vector.y}}) {}
-
-    explicit Matrix(const Vector3 &vector) : matrix({{vector.x}, {vector.y}, {vector.z}}) {}
-
-    explicit Matrix(const Vector4 &vector) : matrix({{vector.x}, {vector.y}, {vector.z}, {vector.w}}) {}
+    explicit Matrix(const Vector &vector);
 
     Matrix operator+(const Matrix &other) const;
 
@@ -43,17 +37,15 @@ public:
 
     Matrix &operator/=(double scalar);
 
-    Matrix dot(const Matrix &other) const;
-
     QList<double> operator[](int index) const;
 
     QList<double> &operator[](int index);
 
-    [[nodiscard]] Vector2 toVector2() const;
+    [[nodiscard]] Vector toVector() const;
 
-    [[nodiscard]] Vector3 toVector3() const;
+    [[nodiscard]] qsizetype rows() const { return matrix.size(); }
 
-    [[nodiscard]] Vector4 toVector4() const;
+    [[nodiscard]] qsizetype columns() const { return matrix[0].size(); }
 };
 
 #endif //MATRIX_H

@@ -3,7 +3,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 
-Vector3 up = {0, 1, 0};
+Vector up = {0, 1, 0};
 
 DrawingArea::DrawingArea(QWidget *parent) : QWidget(parent) {
     setAttribute(Qt::WA_StaticContents);
@@ -12,9 +12,9 @@ DrawingArea::DrawingArea(QWidget *parent) : QWidget(parent) {
     initImage.fill(qRgb(255, 255, 255));
     _image = initImage;
     _textureOn = false;
-    cameraPosition._position = {-150, 50, -400};
-    targetPosition._position = {-150, 50, 0};
-    _camera = Camera(cameraPosition, targetPosition, up, Vector2(width(), height()), fov);
+    cameraPosition.dst = {-150, 50, -400};
+    targetPosition.dst = {-150, 50, 0};
+    _camera = Camera(cameraPosition, targetPosition, Vector(width(), height()), up, fov, -_cylinder.radius * 2);
 }
 
 void DrawingArea::paintEvent(QPaintEvent *event) {
@@ -29,8 +29,8 @@ void DrawingArea::paintEvent(QPaintEvent *event) {
         auto a = projectedVertices[triangle.a] - projectedVertices[triangle.b];
         auto b = projectedVertices[triangle.b] - projectedVertices[triangle.c];
 
-        auto cross = Vector3(a.x, a.y, a.z).cross(Vector3(b.x, b.y, b.z));
-        if (cross.z <= 0) {
+        auto cross = Vector(a[0], a[1], a[2]).cross(Vector(b[0], b[1], b[2]));
+        if (cross[2] <= 0) {
             continue;
         }
 
@@ -39,11 +39,9 @@ void DrawingArea::paintEvent(QPaintEvent *event) {
         auto p3 = projectedVertices[triangle.c];
 
         if (_textureOn && !_editing) {
-            auto triangleTextureCoordinates = {
-                    _cylinder.textureCoordinates[triangle.a],
-                    _cylinder.textureCoordinates[triangle.b],
-                    _cylinder.textureCoordinates[triangle.c]
-            };
+            auto triangleTextureCoordinates = {_cylinder.textureCoordinates[triangle.a],
+                                               _cylinder.textureCoordinates[triangle.b],
+                                               _cylinder.textureCoordinates[triangle.c]};
             auto trimesh = MeshTriangle(p1, p2, p3, _texture, triangleTextureCoordinates);
             trimesh.draw(painter);
         } else {
@@ -77,10 +75,7 @@ void DrawingArea::mouseMoveEvent(QMouseEvent *event) {
         _cylinder.rotate(angleX, angleY, 0);
         update();
     } else if (event->buttons() & Qt::RightButton) {
-        cameraPosition._position.x += dx;
-        cameraPosition._position.y += dy;
-
-        _camera = Camera(cameraPosition, targetPosition, up, Vector2(width(), height()), fov);
+        _camera.shift(dx, dy, 0);
         update();
     }
 }
@@ -101,10 +96,8 @@ void DrawingArea::wheelEvent(QWheelEvent *event) {
         numSteps = numDegrees / 15;
     }
 
-    cameraPosition._position.z += numSteps.y();
-    cameraPosition._position.z = std::max(cameraPosition._position.z, -5000.0);
-    cameraPosition._position.z = std::min(cameraPosition._position.z, - _cylinder.radius * 2);
-    _camera = Camera(cameraPosition, targetPosition, up, Vector2(width(), height()), fov);
+    auto dz = numSteps.y() * 1.;
+    _camera.shift(0, 0, dz);
     update();
 }
 

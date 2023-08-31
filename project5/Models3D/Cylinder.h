@@ -5,7 +5,7 @@
 
 class Cylinder : public Mesh {
 public:
-    Cylinder(double radius, double height, int sides, Vector3 positionOnScen);
+    Cylinder(double radius, double height, int sides, Vector positionOnScen);
 
     double radius;
     double height;

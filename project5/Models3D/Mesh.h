@@ -5,25 +5,23 @@
 #include <QList>
 #include <QImage>
 #include <QPainter>
-#include "../Math/Vector4.h"
+#include "../Math/Vector.h"
 #include "../Transformations/Transformation.h"
 
-Vector2 vec4ToOffset(const Vector4 &vector);
+Vector vecToOffset(const Vector &vector);
 
 struct MeshTriangle {
-    Vector4 &v1, &v2, &v3;
+    Vector &v1, &v2, &v3;
     QColor color = Qt::black;
     QImage texture = QImage();
-    QList<Vector2> textureCoordinates = QList<Vector2>();
+    QList<Vector> textureCoordinates = QList<Vector>();
 
-    MeshTriangle(Vector4 &v1, Vector4 &v2, Vector4 &v3);
+    MeshTriangle(Vector &v1, Vector &v2, Vector &v3);
 
-    MeshTriangle(Vector4 &v1, Vector4 &v2, Vector4 &v3, QImage texture, QList<Vector2> textureCoordinates);
+    MeshTriangle(Vector &v1, Vector &v2, Vector &v3, QImage texture, QList<Vector> textureCoordinates);
 
     void draw(QPainter &painter);
 };
-
-Vector3 toBarycentric(Vector4 p, Vector4 a, Vector4 b, Vector4 c);
 
 struct TriangleVertices {
     int a = 0;
@@ -36,9 +34,10 @@ public:
     QImage texture;
 
     void rotate(double angleX, double angleY, double angleZ);
-    QList<Vector4> vertices;
+
+    QList<Vector> vertices;
     QList<TriangleVertices> triangles;
-    QList<Vector2> textureCoordinates;
+    QList<Vector> textureCoordinates;
     Transformation transformation = Transformation();
 };
 

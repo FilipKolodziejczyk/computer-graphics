@@ -18,108 +18,117 @@ Matrix::Matrix(const QList<QList<double>> &matrix) {
     this->matrix = matrix;
 }
 
+Matrix::Matrix(const Vector &vector) {
+    matrix = QList<QList<double>>(vector.size(), QList<double>(1));
+    for (int i = 0; i < vector.size(); i++)
+        matrix[i][0] = vector[i];
+}
+
 Matrix Matrix::operator+(const Matrix &other) const {
-    if (matrix.size() != other.matrix.size() || matrix[0].size() != other.matrix[0].size())
+    if (rows() != other.rows() || columns() != other.columns())
         throw std::invalid_argument("Matrix dimensions must agree");
 
     Matrix result(matrix);
-    for (int i = 0; i < matrix.size(); i++)
-        for (int j = 0; j < matrix[0].size(); j++)
-            result.matrix[i][j] += other.matrix[i][j];
+    for (int i = 0; i < result.rows(); i++)
+        for (int j = 0; j < result.columns(); j++)
+            result[i][j] += other[i][j];
 
     return result;
 }
 
 Matrix Matrix::operator-(const Matrix &other) const {
-    if (matrix.size() != other.matrix.size() || matrix[0].size() != other.matrix[0].size())
+    if (rows() != other.rows() || columns() != other.columns())
         throw std::invalid_argument("Matrix dimensions must agree");
 
     Matrix result(matrix);
-    for (int i = 0; i < matrix.size(); i++)
-        for (int j = 0; j < matrix[0].size(); j++)
-            result.matrix[i][j] -= other.matrix[i][j];
+    for (int i = 0; i < result.rows(); i++)
+        for (int j = 0; j < result.columns(); j++)
+            result[i][j] -= other[i][j];
 
     return result;
 }
 
 Matrix Matrix::operator*(const Matrix &other) const {
-    if (matrix[0].size() != other.matrix.size())
+    if (columns() != other.rows())
         throw std::invalid_argument("Matrix dimensions must agree");
 
-    Matrix result(matrix.size(), other.matrix[0].size());
-    for (int i = 0; i < result.matrix.size(); i++)
-        for (int j = 0; j < result.matrix[0].size(); j++)
-            for (int k = 0; k < matrix[0].size(); k++)
-                result.matrix[i][j] += matrix[i][k] * other.matrix[k][j];
+    Matrix result(rows(), other.columns());
+    for (int i = 0; i < result.rows(); i++)
+        for (int j = 0; j < result.columns(); j++)
+            for (int k = 0; k < columns(); k++)
+                result[i][j] += (*this)[i][k] * other[k][j];
 
     return result;
 }
 
 Matrix Matrix::operator*(double scalar) const {
     Matrix result(matrix);
-    for (int i = 0; i < matrix.size(); i++)
-        for (int j = 0; j < matrix[0].size(); j++)
-            result.matrix[i][j] *= scalar;
+    for (int i = 0; i < result.rows(); i++)
+        for (int j = 0; j < result.columns(); j++)
+            result[i][j] *= scalar;
 
     return result;
 }
 
 Matrix Matrix::operator/(double scalar) const {
+    if (scalar == 0)
+        throw std::invalid_argument("Division by zero");
+
     Matrix result(matrix);
-    for (int i = 0; i < matrix.size(); i++)
-        for (int j = 0; j < matrix[0].size(); j++)
-            result.matrix[i][j] /= scalar;
+    for (int i = 0; i < result.rows(); i++)
+        for (int j = 0; j < result.columns(); j++)
+            result[i][j] /= scalar;
 
     return result;
 }
 
 Matrix &Matrix::operator+=(const Matrix &other) {
-    if (matrix.size() != other.matrix.size() || matrix[0].size() != other.matrix[0].size())
+    if (rows() != other.rows() || columns() != other.columns())
         throw std::invalid_argument("Matrix dimensions must agree");
 
-    for (int i = 0; i < matrix.size(); i++)
-        for (int j = 0; j < matrix[0].size(); j++)
-            matrix[i][j] += other.matrix[i][j];
+    for (int i = 0; i < rows(); i++)
+        for (int j = 0; j < columns(); j++)
+            (*this)[i][j] += other[i][j];
 
     return *this;
 }
 
 Matrix &Matrix::operator-=(const Matrix &other) {
-    if (matrix.size() != other.matrix.size() || matrix[0].size() != other.matrix[0].size())
+    if (rows() != other.rows() || columns() != other.columns())
         throw std::invalid_argument("Matrix dimensions must agree");
 
-    for (int i = 0; i < matrix.size(); i++)
-        for (int j = 0; j < matrix[0].size(); j++)
-            matrix[i][j] -= other.matrix[i][j];
+    for (int i = 0; i < rows(); i++)
+        for (int j = 0; j < columns(); j++)
+            (*this)[i][j] -= other[i][j];
 
     return *this;
 }
 
 Matrix &Matrix::operator*=(const Matrix &other) {
-    if (matrix[0].size() != other.matrix.size())
+    if (columns() != other.rows())
         throw std::invalid_argument("Matrix dimensions must agree");
 
-    Matrix result(matrix.size(), other.matrix[0].size());
-    for (int i = 0; i < result.matrix.size(); i++)
-        for (int j = 0; j < result.matrix[0].size(); j++)
-            for (int k = 0; k < matrix[0].size(); k++)
-                result.matrix[i][j] += matrix[i][k] * other.matrix[k][j];
+    Matrix result(rows(), other.columns());
+    for (int i = 0; i < result.rows(); i++)
+        for (int j = 0; j < result.columns(); j++)
+            for (int k = 0; k < columns(); k++)
+                result[i][j] += (*this)[i][k] * other[k][j];
 
     matrix = result.matrix;
     return *this;
 }
 
 Matrix &Matrix::operator*=(double scalar) {
-    for (auto & row : matrix)
-        for (auto & element : row)
+    for (auto &row: matrix)
+        for (auto &element: row)
             element *= scalar;
 
     return *this;
 }
 
 Matrix &Matrix::operator/=(double scalar) {
-    for (auto & row : matrix)
-        for (auto & element : row)
+    for (auto &row: matrix)
+        for (auto &element: row)
             element /= scalar;
 
     return *this;
@@ -133,42 +142,19 @@ QList<double> Matrix::operator[](int row) const {
 }
 
 QList<double> &Matrix::operator[](int row) {
-    if (row < 0 || row >= matrix.size())
+    if (row < 0 || row >= rows())
         throw std::invalid_argument("Row index out of bounds");
 
     return matrix[row];
 }
 
-Matrix Matrix::dot(const Matrix &other) const {
-    if (matrix[0].size() != other.matrix.size())
-        throw std::invalid_argument("Matrix dimensions must agree");
+Vector Matrix::toVector() const {
+    if (columns() != 1)
+        throw std::invalid_argument("Matrix must have only one column");
 
-    Matrix result(matrix.size(), other.matrix[0].size());
-    for (int i = 0; i < result.matrix.size(); i++)
-        for (int j = 0; j < result.matrix[0].size(); j++)
-            for (int k = 0; k < matrix[0].size(); k++)
-                result.matrix[i][j] += matrix[i][k] * other.matrix[k][j];
+    Vector result(rows());
+    for (int i = 0; i < rows(); i++)
+        result[i] = matrix[i][0];
 
     return result;
-}
-
-Vector2 Matrix::toVector2() const {
-    if (matrix.size() != 2 || matrix[0].size() != 1)
-        throw std::invalid_argument("Matrix must be 2x1");
-
-    return {matrix[0][0], matrix[1][0]};
-}
-
-Vector3 Matrix::toVector3() const {
-    if (matrix.size() != 3 || matrix[0].size() != 1)
-        throw std::invalid_argument("Matrix must be 3x1");
-
-    return {matrix[0][0], matrix[1][0], matrix[2][0]};
-}
-
-Vector4 Matrix::toVector4() const {
-    if (matrix.size() != 4 || matrix[0].size() != 1)
-        throw std::invalid_argument("Matrix must be 4x1");
-
-    return {matrix[0][0], matrix[1][0], matrix[2][0], matrix[3][0]};
 }

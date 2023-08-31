@@ -6,12 +6,10 @@
 class ScaleMatrix : public Matrix {
 public:
     ScaleMatrix(double scaleX, double scaleY, double scaleZ) {
-        matrix = {
-            {scaleX, 0, 0, 0},
-            {0, scaleY, 0, 0},
-            {0, 0, scaleZ, 0},
-            {0, 0, 0, 1}
-        };
+        matrix = {{scaleX, 0,      0,      0},
+                  {0,      scaleY, 0,      0},
+                  {0,      0,      scaleZ, 0},
+                  {0,      0,      0,      1}};
     }
 };
 
